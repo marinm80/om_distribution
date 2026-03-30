@@ -1,32 +1,38 @@
 // App.jsx — top-level composition root.
-//
-// Currently a placeholder. Will be assembled in Phase 3–4 with:
-//   <Navbar />
-//   <main>
-//     <Hero />       <About />     <Stats />    <TrustedBy />
-//     <Categories /> <Products />  <WhyUs />    <Testimonials />
-//     <FAQ />        <Contact />
-//   </main>
-//   <Footer />
-//
-// See docs/PLAN.md (Fase 3 & 4) and docs/prompt.md for the full section spec.
+// Assembles all landing page sections in order per docs/prompt.md spec.
+
+import Navbar from './components/layout/Navbar';
+import Hero from './components/sections/Hero';
+import Stats from './components/sections/Stats';
+import About from './components/sections/About';
+import TrustedBy from './components/sections/TrustedBy';
+import Categories from './components/sections/Categories';
+import ProductGallery from './components/sections/ProductGallery';
+import WhyChooseUs from './components/sections/WhyChooseUs';
+import Testimonials from './components/sections/Testimonials';
+import FAQ from './components/sections/FAQ';
+import Contact from './components/sections/Contact';
+import Footer from './components/layout/Footer';
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-primary mb-4">
-          OM Distribution
-        </h1>
-        <p className="text-text-secondary text-lg">
-          Quality Food Distribution You Can Trust
-        </p>
-        <p className="mt-8 text-sm text-text-secondary">
-          Landing page under construction...
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main>
+        <Hero />
+        <Stats />
+        <About />
+        <TrustedBy />
+        <Categories />
+        <ProductGallery />
+        <WhyChooseUs />
+        <Testimonials />
+        <FAQ />
+        <Contact />
+      </main>
+      <Footer />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
