@@ -12,6 +12,8 @@ const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
 const testimonialRoutes = require('./routes/testimonial.routes');
 const contactRoutes = require('./routes/contact.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const categoryRoutes = require('./routes/category.routes');
 
 validateEnv();
 
@@ -32,6 +34,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Health Check
 app.get('/api/health', async (req, res, next) => {
