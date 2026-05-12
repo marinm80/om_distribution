@@ -4,7 +4,9 @@ const { protect, restrictTo } = require('../middlewares/auth');
 
 const router = express.Router();
 
+// Public routes
 router.get('/', productController.getAllProducts);
+router.get('/landing', productController.getLandingProducts);
 router.get('/categories', productController.getCategories);
 router.get('/:id', productController.getProduct);
 
@@ -13,6 +15,7 @@ router.use(protect, restrictTo('admin', 'seller'));
 
 router.post('/bulk', productController.bulkCreate);
 router.post('/', productController.createProduct);
+router.patch('/:id/toggle', productController.toggleField);
 router.patch('/:id', productController.updateProduct);
 
 // Solo admin puede eliminar

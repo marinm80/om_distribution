@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
-import { getProducts } from '../../services/api';
+import { getLandingProducts } from '../../services/api';
 import SectionWrapper from '../layout/SectionWrapper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
@@ -20,7 +20,7 @@ const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await getProducts(language);
+        const response = await getLandingProducts(language);
         setProducts(response.data.data.products);
       } catch (err) {
         console.error('Error fetching products:', err);

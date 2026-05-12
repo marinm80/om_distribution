@@ -25,6 +25,9 @@ export const deleteProduct = (id, token) =>
 export const bulkImportProducts = (products, token) =>
   api.post('/products/bulk', { products }, { headers: { Authorization: `Bearer ${token}` } });
 
+export const toggleProductField = (id, field, value, token) =>
+  api.patch(`/products/${id}/toggle`, { field, value }, { headers: { Authorization: `Bearer ${token}` } });
+
 // Categories (Admin)
 export const getAdminCategories = (token) =>
   api.get('/categories', { headers: { Authorization: `Bearer ${token}` } });

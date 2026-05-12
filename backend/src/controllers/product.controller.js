@@ -17,6 +17,22 @@ class ProductController {
     }
   }
 
+  // Public endpoint: only active + show_on_landing products
+  async getLandingProducts(req, res, next) {
+    try {
+      const lang = req.query.lang === 'en' ? 'en' : 'es';
+      const products = await productRepository.findForLanding(lang);
+
+      res.status(200).json({
+        status: 'success',
+        results: products.length,
+        data: { products }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getProduct(req, res, next) {
     try {
       const lang = req.query.lang === 'en' ? 'en' : 'es';
@@ -51,6 +67,27 @@ class ProductController {
     try {
       const product = await productRepository.update(req.params.id, req.body);
       
+      if (!product) {
+        return next(new AppError('No product found with that ID', 404));
+      }
+
+      res.status(200).json({
+        status: 'success',
+        data: { product }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async toggleField(req, res, next) {
+    try {
+      const { field, value } = req.body;
+      if (!['is_active', 'show_on_landing'].includes(field)) {
+        return next(new AppError('Invalid field. Must be is_active or show_on_landing', 400));
+      }
+
+      const product = await productRepository.toggleField(req.params.id, field, value);
       if (!product) {
         return next(new AppError('No product found with that ID', 404));
       }

@@ -6,13 +6,38 @@ class ProductRepository {
       SELECT 
         p.id, 
         p.name_${lang} as name, 
+        p.name_en,
+        p.name_es,
         p.description_${lang} as description, 
+        p.description_en,
+        p.description_es,
         p.image_url, 
         p.category_id,
+        p.is_active,
+        p.show_on_landing,
         c.name_${lang} as category_name,
         p.created_at
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
+      ORDER BY p.created_at DESC
+    `;
+    const { rows } = await pool.query(query);
+    return rows;
+  }
+
+  // Public: only active products shown on landing
+  async findForLanding(lang = 'es') {
+    const query = `
+      SELECT 
+        p.id, 
+        p.name_${lang} as name, 
+        p.description_${lang} as description, 
+        p.image_url, 
+        p.category_id,
+        c.name_${lang} as category_name
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.is_active = true AND p.show_on_landing = true
       ORDER BY p.created_at DESC
     `;
     const { rows } = await pool.query(query);
@@ -24,9 +49,15 @@ class ProductRepository {
       SELECT 
         p.id, 
         p.name_${lang} as name, 
+        p.name_en,
+        p.name_es,
         p.description_${lang} as description, 
+        p.description_en,
+        p.description_es,
         p.image_url, 
         p.category_id,
+        p.is_active,
+        p.show_on_landing,
         c.name_${lang} as category_name,
         p.created_at
       FROM products p
@@ -38,25 +69,35 @@ class ProductRepository {
   }
 
   async create(productData) {
-    const { name_en, name_es, description_en, description_es, image_url, category_id } = productData;
+    const { name_en, name_es, description_en, description_es, image_url, category_id, is_active = true, show_on_landing = false } = productData;
     const query = `
-      INSERT INTO products (name_en, name_es, description_en, description_es, image_url, category_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO products (name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
-    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, category_id]);
+    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing]);
     return rows[0];
   }
 
   async update(id, productData) {
-    const { name_en, name_es, description_en, description_es, image_url, category_id } = productData;
+    const { name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing } = productData;
     const query = `
       UPDATE products 
-      SET name_en = $1, name_es = $2, description_en = $3, description_es = $4, image_url = $5, category_id = $6
-      WHERE id = $7
+      SET name_en = $1, name_es = $2, description_en = $3, description_es = $4, 
+          image_url = $5, category_id = $6, is_active = $7, show_on_landing = $8
+      WHERE id = $9
       RETURNING *
     `;
-    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, category_id, id]);
+    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing, id]);
+    return rows[0];
+  }
+
+  async toggleField(id, field, value) {
+    if (!['is_active', 'show_on_landing'].includes(field)) {
+      throw new Error('Invalid field');
+    }
+    const query = `UPDATE products SET ${field} = $1 WHERE id = $2 RETURNING *`;
+    const { rows } = await pool.query(query, [value, id]);
     return rows[0];
   }
 
@@ -79,11 +120,11 @@ class ProductRepository {
       const results = [];
 
       for (const p of products) {
-        const { name_en, name_es, description_en, description_es, image_url, category_id } = p;
+        const { name_en, name_es, description_en, description_es, image_url, category_id, is_active = true, show_on_landing = false } = p;
         const { rows } = await client.query(
-          `INSERT INTO products (name_en, name_es, description_en, description_es, image_url, category_id)
-           VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-          [name_en || '', name_es || '', description_en || '', description_es || '', image_url || '', category_id || null]
+          `INSERT INTO products (name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          [name_en || '', name_es || '', description_en || '', description_es || '', image_url || '', category_id || null, is_active, show_on_landing]
         );
         results.push(rows[0]);
       }

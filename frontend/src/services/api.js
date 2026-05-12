@@ -6,6 +6,7 @@ const api = axios.create({
 });
 
 export const getProducts = (lang = 'es') => api.get(`/products?lang=${lang}`);
+export const getLandingProducts = (lang = 'es') => api.get(`/products/landing?lang=${lang}`);
 export const getCategories = (lang = 'es') => api.get(`/products/categories?lang=${lang}`);
 export const getTestimonials = (lang = 'es') => api.get(`/testimonials?lang=${lang}`);
 export const submitContact = (data) => api.post('/contact', data);
