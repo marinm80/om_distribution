@@ -1,5 +1,4 @@
 const express = require('express');
-const authController = require('../controllers/auth.controller'); // Aún no creado, lo crearé ahora
 const authService = require('../services/auth.service');
 const { protect } = require('../middlewares/auth');
 
