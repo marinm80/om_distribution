@@ -71,6 +71,32 @@ class ProductRepository {
     const { rows } = await pool.query(query);
     return rows;
   }
+
+  async bulkCreate(products) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const results = [];
+
+      for (const p of products) {
+        const { name_en, name_es, description_en, description_es, image_url, category_id } = p;
+        const { rows } = await client.query(
+          `INSERT INTO products (name_en, name_es, description_en, description_es, image_url, category_id)
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+          [name_en || '', name_es || '', description_en || '', description_es || '', image_url || '', category_id || null]
+        );
+        results.push(rows[0]);
+      }
+
+      await client.query('COMMIT');
+      return results;
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
 }
 
 module.exports = new ProductRepository();

@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct } from '../../services/adminApi';
-import { Plus, Pencil, Trash2, X, Search, Image, Download, FileText } from 'lucide-react';
+import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct, bulkImportProducts } from '../../services/adminApi';
+import { Plus, Pencil, Trash2, X, Search, Image, Download, FileText, Upload, FileSpreadsheet } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const ProductsPage = () => {
   const { token, user } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const fileInputRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
@@ -80,7 +83,105 @@ const ProductsPage = () => {
     }
   };
 
-  // --- PDF Catalog Download ---
+  // ──── Template Download ────
+  const downloadTemplate = () => {
+    const templateData = [
+      {
+        name_en: 'Premium Rice',
+        name_es: 'Arroz Premium',
+        description_en: 'High quality long grain rice imported from Thailand.',
+        description_es: 'Arroz de grano largo de alta calidad importado de Tailandia.',
+        image_url: 'https://example.com/rice.jpg',
+        category_id: 1,
+      },
+      {
+        name_en: 'Organic Black Beans',
+        name_es: 'Frijoles Negros Orgánicos',
+        description_en: 'Farm fresh organic black beans, 1kg bag.',
+        description_es: 'Frijoles negros orgánicos frescos de granja, bolsa de 1kg.',
+        image_url: 'https://example.com/beans.jpg',
+        category_id: 1,
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(templateData);
+
+    // Column widths
+    ws['!cols'] = [
+      { wch: 25 }, // name_en
+      { wch: 25 }, // name_es
+      { wch: 50 }, // description_en
+      { wch: 50 }, // description_es
+      { wch: 40 }, // image_url
+      { wch: 12 }, // category_id
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Products');
+
+    // Add a reference sheet with category IDs
+    const catData = categories.map(c => ({
+      category_id: c.id,
+      name: c.name_es || c.name_en || c.name,
+    }));
+    if (catData.length > 0) {
+      const catWs = XLSX.utils.json_to_sheet(catData);
+      catWs['!cols'] = [{ wch: 12 }, { wch: 30 }];
+      XLSX.utils.book_append_sheet(wb, catWs, 'Categories Reference');
+    }
+
+    XLSX.writeFile(wb, 'OM_Products_Import_Template.xlsx');
+  };
+
+  // ──── Import from Excel/CSV ────
+  const handleImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+
+      if (rows.length === 0) {
+        alert('The file is empty or has no valid rows.');
+        return;
+      }
+
+      // Validate required columns
+      const requiredCols = ['name_en', 'name_es'];
+      const firstRow = rows[0];
+      const missing = requiredCols.filter(col => !(col in firstRow));
+      if (missing.length > 0) {
+        alert(`Missing required columns: ${missing.join(', ')}\n\nPlease download the template first.`);
+        return;
+      }
+
+      const productsToImport = rows.map(row => ({
+        name_en: String(row.name_en || '').trim(),
+        name_es: String(row.name_es || '').trim(),
+        description_en: String(row.description_en || '').trim(),
+        description_es: String(row.description_es || '').trim(),
+        image_url: String(row.image_url || '').trim(),
+        category_id: row.category_id ? Number(row.category_id) : null,
+      }));
+
+      const res = await bulkImportProducts(productsToImport, token);
+      alert(`✅ ${res.data.data.imported} products imported successfully!`);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Error importing products. Check the file format.');
+    } finally {
+      setImporting(false);
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // ──── PDF Catalog Download (Fixed) ────
   const downloadCatalogPDF = () => {
     const doc = new jsPDF();
 
@@ -116,10 +217,9 @@ const ProductsPage = () => {
     });
 
     let yPos = 58;
-    const categories = Object.keys(grouped);
+    const catKeys = Object.keys(grouped);
 
-    categories.forEach((cat, catIdx) => {
-      // Check if we need a new page
+    catKeys.forEach((cat) => {
       if (yPos > 260) {
         doc.addPage();
         yPos = 20;
@@ -189,7 +289,17 @@ const ProductsPage = () => {
       );
     }
 
-    doc.save(`OM_Distribution_Catalog_${new Date().toISOString().slice(0, 10)}.pdf`);
+    // Use blob + manual download for consistent filename
+    const fileName = `OM_Distribution_Catalog_${new Date().toISOString().slice(0, 10)}.pdf`;
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const filtered = products.filter(p => {
@@ -207,16 +317,46 @@ const ProductsPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">Product Catalog</h1>
           <p className="text-gray-500 mt-1">{products.length} items in catalog</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Download Template */}
+          <button
+            onClick={downloadTemplate}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-all text-sm"
+            title="Download Excel template for bulk import"
+          >
+            <FileSpreadsheet size={16} />
+            Template
+          </button>
+
+          {/* Import */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".xlsx,.xls,.csv"
+            onChange={handleImport}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all text-sm disabled:opacity-50"
+          >
+            <Upload size={16} />
+            {importing ? 'Importing...' : 'Import'}
+          </button>
+
+          {/* Download PDF */}
           <button
             onClick={downloadCatalogPDF}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all text-sm"
           >
-            <Download size={18} />
-            Download PDF
+            <Download size={16} />
+            PDF
           </button>
+
+          {/* Add Product */}
           <button onClick={openCreate} className="flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] text-white font-semibold rounded-xl hover:bg-[#2a2a2a] transition-all text-sm">
-            <Plus size={18} /> Add Product
+            <Plus size={16} /> Add Product
           </button>
         </div>
       </div>

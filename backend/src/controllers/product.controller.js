@@ -90,6 +90,24 @@ class ProductController {
       next(err);
     }
   }
+
+  async bulkCreate(req, res, next) {
+    try {
+      const { products } = req.body;
+      if (!Array.isArray(products) || products.length === 0) {
+        return next(new AppError('Please provide an array of products', 400));
+      }
+
+      const results = await productRepository.bulkCreate(products);
+      res.status(201).json({
+        status: 'success',
+        message: `${results.length} products imported successfully`,
+        data: { products: results, imported: results.length }
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new ProductController();

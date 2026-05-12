@@ -11,6 +11,7 @@ router.get('/:id', productController.getProduct);
 // Rutas protegidas para Admin y Seller (crear y modificar)
 router.use(protect, restrictTo('admin', 'seller'));
 
+router.post('/bulk', productController.bulkCreate);
 router.post('/', productController.createProduct);
 router.patch('/:id', productController.updateProduct);
 
