@@ -4,7 +4,7 @@ const pool = require('../config/pool');
 
 const router = express.Router();
 
-router.use(protect, restrictTo('admin'));
+router.use(protect, restrictTo('admin', 'seller'));
 
 // Dashboard stats
 router.get('/stats', async (req, res, next) => {

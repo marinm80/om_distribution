@@ -6,7 +6,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 const ProductsPage = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -279,9 +280,11 @@ const ProductsPage = () => {
                     <button onClick={() => openEdit(product)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors" title="Edit">
                       <Pencil size={16} />
                     </button>
-                    <button onClick={() => handleDelete(product.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors" title="Delete">
-                      <Trash2 size={16} />
-                    </button>
+                    {isAdmin && (
+                      <button onClick={() => handleDelete(product.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors" title="Delete">
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

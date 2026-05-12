@@ -4,7 +4,8 @@ import { getAdminCategories, createCategory, updateCategory, deleteCategory } fr
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 
 const CategoriesPage = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -85,7 +86,7 @@ const CategoriesPage = () => {
               </div>
               <div className="flex gap-1">
                 <button onClick={() => openEdit(cat)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-600"><Pencil size={15} /></button>
-                <button onClick={() => handleDelete(cat.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500"><Trash2 size={15} /></button>
+                {isAdmin && <button onClick={() => handleDelete(cat.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500"><Trash2 size={15} /></button>}
               </div>
             </div>
           </div>

@@ -13,7 +13,7 @@ const ContactsPage = () => {
     const fetchData = async () => {
       try {
         const res = await getAdminContacts(token);
-        setContacts(res.data.data.contacts);
+        setContacts(res.data.data.leads || []);
       } catch (err) {
         console.error(err);
       } finally {

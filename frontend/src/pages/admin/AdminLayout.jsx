@@ -5,18 +5,21 @@ import {
   Mail, Users, LogOut, ChevronRight
 } from 'lucide-react';
 
-const navItems = [
-  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, end: true },
-  { name: 'Products', path: '/admin/products', icon: Package },
-  { name: 'Categories', path: '/admin/categories', icon: Tags },
-  { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquareQuote },
-  { name: 'Contacts', path: '/admin/contacts', icon: Mail },
-  { name: 'Users', path: '/admin/users', icon: Users },
+const allNavItems = [
+  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, end: true, roles: ['admin', 'seller'] },
+  { name: 'Products', path: '/admin/products', icon: Package, roles: ['admin', 'seller'] },
+  { name: 'Categories', path: '/admin/categories', icon: Tags, roles: ['admin', 'seller'] },
+  { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquareQuote, roles: ['admin'] },
+  { name: 'Contacts', path: '/admin/contacts', icon: Mail, roles: ['admin'] },
+  { name: 'Users', path: '/admin/users', icon: Users, roles: ['admin'] },
 ];
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const userRole = user?.role || 'seller';
+
+  const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
   const handleLogout = async () => {
     await logout();
@@ -66,14 +69,14 @@ const AdminLayout = () => {
         {/* User + Logout */}
         <div className="p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 px-3 py-2 mb-2">
-            <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-              <span className="text-xs font-bold text-emerald-700">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${userRole === 'admin' ? 'bg-red-100' : 'bg-blue-100'}`}>
+              <span className={`text-xs font-bold ${userRole === 'admin' ? 'text-red-700' : 'text-blue-700'}`}>
                 {user?.email?.[0]?.toUpperCase() || 'A'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">{user?.email || 'Admin'}</p>
-              <p className="text-[11px] text-gray-400">Super Admin</p>
+              <p className="text-[11px] text-gray-400 capitalize">{userRole}</p>
             </div>
           </div>
           <button

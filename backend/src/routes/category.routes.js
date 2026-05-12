@@ -16,8 +16,8 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// Admin-only CRUD
-router.use(protect, restrictTo('admin'));
+// Admin and Seller can create/update
+router.use(protect, restrictTo('admin', 'seller'));
 
 router.post('/', async (req, res, next) => {
   try {
@@ -47,7 +47,7 @@ router.patch('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', restrictTo('admin'), async (req, res, next) => {
   try {
     await pool.query('DELETE FROM categories WHERE id = $1', [req.params.id]);
     res.status(204).json({ status: 'success', data: null });

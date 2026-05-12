@@ -28,6 +28,13 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Admin-only route (blocks sellers)
+const AdminOnly = ({ children }) => {
+  const { user } = useAuth();
+  if (user?.role !== 'admin') return <Navigate to="/admin" replace />;
+  return children;
+};
+
 // Landing Page
 const LandingPage = () => (
   <LanguageProvider>
@@ -64,9 +71,9 @@ function App() {
             <Route index element={<DashboardHome />} />
             <Route path="products" element={<ProductsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
-            <Route path="testimonials" element={<TestimonialsPage />} />
-            <Route path="contacts" element={<ContactsPage />} />
-            <Route path="users" element={<UsersPage />} />
+            <Route path="testimonials" element={<AdminOnly><TestimonialsPage /></AdminOnly>} />
+            <Route path="contacts" element={<AdminOnly><ContactsPage /></AdminOnly>} />
+            <Route path="users" element={<AdminOnly><UsersPage /></AdminOnly>} />
           </Route>
         </Routes>
       </Router>
