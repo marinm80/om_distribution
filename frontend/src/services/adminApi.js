@@ -48,3 +48,16 @@ export const deleteTestimonial = (id, token) =>
 // Contacts (Admin)
 export const getAdminContacts = (token) =>
   api.get('/contact', { headers: { Authorization: `Bearer ${token}` } });
+
+// Users (Admin)
+export const getAdminUsers = (token) =>
+  api.get('/users', { headers: { Authorization: `Bearer ${token}` } });
+
+export const createUser = (data, token) =>
+  api.post('/users', data, { headers: { Authorization: `Bearer ${token}` } });
+
+export const updateUser = (id, data, token) =>
+  api.patch(`/users/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
+
+export const deleteUser = (id, token) =>
+  api.delete(`/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });

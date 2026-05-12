@@ -18,6 +18,7 @@ import ProductsPage from './pages/admin/ProductsPage';
 import CategoriesPage from './pages/admin/CategoriesPage';
 import TestimonialsPage from './pages/admin/TestimonialsPage';
 import ContactsPage from './pages/admin/ContactsPage';
+import UsersPage from './pages/admin/UsersPage';
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -65,6 +66,7 @@ function App() {
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="testimonials" element={<TestimonialsPage />} />
             <Route path="contacts" element={<ContactsPage />} />
+            <Route path="users" element={<UsersPage />} />
           </Route>
         </Routes>
       </Router>

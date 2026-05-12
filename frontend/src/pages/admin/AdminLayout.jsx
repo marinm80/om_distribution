@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Package, Tags, MessageSquareQuote,
-  Mail, Settings, LogOut, ChevronRight
+  Mail, Users, LogOut, ChevronRight
 } from 'lucide-react';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { name: 'Categories', path: '/admin/categories', icon: Tags },
   { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquareQuote },
   { name: 'Contacts', path: '/admin/contacts', icon: Mail },
+  { name: 'Users', path: '/admin/users', icon: Users },
 ];
 
 const AdminLayout = () => {
