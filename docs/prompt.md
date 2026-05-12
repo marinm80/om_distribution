@@ -258,64 +258,35 @@ Debe incluir:
 
 ## **🛠️ Tecnologías**
 Estructura pensada para:
-- **React 18+** (con hooks y componentes funcionales).  
-- **Redux Toolkit (RTK)** para manejo de estado global.  
-- **TailwindCSS 3+** (configuración personalizada de colores y fuentes).  
-- **Framer Motion** o **AOS** para animaciones de scroll.  
-- **Swiper.js** o **Embla Carousel** para carruseles.  
-- **React Hook Form** o validación nativa para el formulario.  
-- Componentes reutilizables y código limpio.  
+- **React 19** (con hooks y componentes funcionales).
+- **TailwindCSS v4** (tokens personalizados con `@theme` en `index.css`).
+- **Framer Motion** para animaciones de scroll y transiciones.
+- **Swiper.js** para carruseles de productos y testimonios.
+- Validación nativa con `useReducer` + custom hooks para el formulario.
+- Componentes reutilizables y código limpio.
 
-### Manejo de estado con RTK:
-Usar **Redux Toolkit** para centralizar el estado de la aplicación:
+### Manejo de estado:
+Estado local con `useState` / `useReducer`. Estado compartido via **Context API** o custom hooks en `src/hooks/`. No se usa Redux.
 
-**Slices sugeridos:**
-- `productsSlice` — Lista de productos, categoría activa, filtros, estado de carga.  
-- `contactSlice` — Datos del formulario, estado de envío (idle/loading/success/error).  
-- `uiSlice` — Estado del menú móvil (abierto/cerrado), sección activa en el navbar, modal visibility.  
-
-**Configuración:**
-- Store centralizado con `configureStore()`.  
-- `createSlice()` para cada dominio de estado.  
-- `createAsyncThunk()` para llamadas asíncronas (envío de formulario, carga de productos si viene de API).  
-- **RTK Query** (opcional) si a futuro se conecta a un backend/API REST.  
-- `Provider` envolviendo `<App />` en el entry point.  
-
-**Ejemplo de uso:**
-```js
-// store/slices/productsSlice.js
-const productsSlice = createSlice({
-  name: 'products',
-  initialState: { items: [], activeCategory: 'all', status: 'idle' },
-  reducers: {
-    setActiveCategory: (state, action) => { state.activeCategory = action.payload },
-  },
-});
-```  
-
-### Estructura de carpetas sugerida:
+### Estructura de carpetas:
 ```
 src/
 ├── components/
 │   ├── layout/          # Navbar, Footer
-│   ├── sections/         # Hero, About, Products, Stats, FAQ, etc.
-│   ├── ui/               # Button, Card, Badge, Accordion, Input
-│   └── carousel/         # ProductCarousel, TestimonialCarousel
-├── store/
-│   ├── store.js          # configureStore + combinación de slices
-│   └── slices/
-│       ├── productsSlice.js   # Estado de productos y filtros
-│       ├── contactSlice.js    # Estado del formulario de contacto
-│       └── uiSlice.js         # Estado de UI (menú, modales, sección activa)
+│   ├── sections/        # Hero, About, Products, Stats, FAQ, etc.
+│   ├── ui/              # Button, Card, Badge, Accordion, Input
+│   └── carousel/        # ProductCarousel, TestimonialCarousel
+├── context/             # React Context providers
+├── hooks/               # useContactForm, useInView, useCountUp
 ├── assets/
-│   ├── images/           # Fotos de productos, hero, logos
-│   └── icons/            # SVG icons
+│   ├── images/          # Fotos de productos, hero, logos
+│   └── icons/           # SVG icons
 ├── data/
-│   ├── products.js       # Array de productos para el carrusel
-│   ├── testimonials.js   # Array de testimonios
-│   └── faq.js            # Array de preguntas frecuentes
-├── styles/
-│   └── globals.css       # Tailwind imports + fuentes
+│   ├── products.js      # Array de productos para el carrusel
+│   ├── testimonials.js  # Array de testimonios
+│   └── faq.js           # Array de preguntas frecuentes
+├── services/            # Fetch wrappers hacia el API
+├── utils/               # Helpers reutilizables
 ├── App.jsx
 └── main.jsx
 ```

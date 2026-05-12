@@ -1,35 +1,57 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const { authenticateRefresh } = require('../middlewares/auth');
+const authController = require('../controllers/auth.controller'); // Aún no creado, lo crearé ahora
+const authService = require('../services/auth.service');
+const { protect } = require('../middlewares/auth');
 
 const router = express.Router();
 
-/**
- * POST /api/auth/refresh
- * Receives a valid refresh token and returns a new access token.
- *
- * Body: { refreshToken: string }
- * Response: { accessToken: string }
- *
- * TODO: when UserRepository is implemented, validate that the
- * refreshToken is still stored in the DB (rotation check) and
- * replace it with a newly generated one (token rotation).
- */
-router.post('/refresh', authenticateRefresh, (req, res) => {
-  const { id, email, role } = req.tokenPayload;
+// Lógica de controller inline para auth (o crear controlador aparte)
+router.post('/login', async (req, res, next) => {
+  try {
+    const result = await authService.login(req.body.email, req.body.password);
+    
+    // Cookie para refresh token
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+    });
 
-  const accessToken = jwt.sign(
-    { id, email, role },
-    process.env.JWT_SECRET,
-    { expiresIn: '15m' }
-  );
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: result.user,
+        accessToken: result.accessToken
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
-  res.json({
-    success: true,
-    data: { accessToken },
-    message: 'Access token refreshed',
-    error: null,
-  });
+router.post('/refresh', async (req, res, next) => {
+  try {
+    const token = req.cookies.refreshToken;
+    const result = await authService.refreshToken(token);
+    res.status(200).json({
+      status: 'success',
+      data: { accessToken: result.accessToken }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/logout', async (req, res, next) => {
+  try {
+    const token = req.cookies.refreshToken;
+    await authService.logout(token);
+    res.clearCookie('refreshToken');
+    res.status(200).json({ status: 'success' });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

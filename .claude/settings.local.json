@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx vite:*)",
+      "Bash(npm run:*)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

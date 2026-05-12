@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "products": "Productos",
+    "testimonials": "Testimonios",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "title": "Distribución de Alimentos Premium",
+    "subtitle": "Conectando granjas con su mesa con los más altos estándares de calidad.",
+    "cta": "Ver Productos"
+  },
+  "contact": {
+    "title": "Contáctenos",
+    "name": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono",
+    "company": "Nombre de la Empresa",
+    "message": "Mensaje",
+    "send": "Enviar Mensaje",
+    "success": "¡Mensaje enviado con éxito!"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "address": "Encuéntranos aquí"
+  }
+}

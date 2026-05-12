@@ -1,111 +1,69 @@
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay } from 'swiper/modules';
-import 'swiper/css';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
+import { getTestimonials } from '../../services/api';
+import SectionWrapper from '../layout/SectionWrapper';
+import { Star, Quote } from 'lucide-react';
 
-import { testimonials } from '../../data/testimonials';
+const Testimonials = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
+  const [testimonials, setTestimonials] = useState([]);
 
-// Testimonials — Swiper carousel of client testimonial cards.
-//
-// Responsive: 1 card on mobile, 2 on md, 3 on lg.
-// Autoplay pauses on hover. Each card shows a star rating, quote, avatar, and name.
-// Framer Motion handles the heading reveal on scroll.
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await getTestimonials(language);
+        setTestimonials(response.data.data.testimonials);
+      } catch (err) {
+        console.error('Error fetching testimonials:', err);
+      }
+    };
+    fetchTestimonials();
+  }, [language]);
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
+  return (
+    <SectionWrapper id="testimonials">
+      <div className="text-center mb-16">
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">{t('nav.testimonials')}</h2>
+        <div className="w-20 h-1.5 bg-accent mx-auto rounded-full" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {testimonials.map((testi) => (
+          <div key={testi.id} className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative">
+            <Quote className="absolute top-6 right-8 text-accent/10" size={48} />
+            
+            <div className="flex gap-1 mb-6">
+              {[...Array(5)].map((_, i) => (
+                <Star 
+                  key={i} 
+                  size={16} 
+                  className={i < testi.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} 
+                />
+              ))}
+            </div>
+
+            <p className="text-gray-700 italic mb-8 leading-relaxed">
+              "{testi.content}"
+            </p>
+
+            <div className="flex items-center gap-4">
+              <img 
+                src={testi.image_url} 
+                alt={testi.author_name} 
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div>
+                <h4 className="font-bold text-gray-900">{testi.author_name}</h4>
+                <p className="text-xs text-gray-500 uppercase tracking-widest">{testi.role}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </SectionWrapper>
+  );
 };
 
-function StarRating({ rating }) {
-  return (
-    <div className="flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <span
-          key={i}
-          className={i < rating ? 'text-yellow-400' : 'text-gray-200'}
-          aria-hidden="true"
-        >
-          &#9733;
-        </span>
-      ))}
-    </div>
-  );
-}
-
-export default function Testimonials() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
-
-  return (
-    <section id="testimonials" className="px-6 py-24">
-      <div className="mx-auto max-w-5xl" ref={sectionRef}>
-        {/* Heading */}
-        <motion.div
-          variants={itemVariants}
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-          className="mb-12"
-        >
-          <h2 className="text-3xl font-light tracking-tight text-[#1f1b17]">
-            Client Voices
-          </h2>
-        </motion.div>
-
-        {/* Carousel */}
-        <motion.div
-          variants={itemVariants}
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-        >
-          <Swiper
-            modules={[Autoplay]}
-            spaceBetween={24}
-            slidesPerView={1}
-            autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-            breakpoints={{
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-          >
-            {testimonials.map((t) => (
-              <SwiperSlide key={t.id}>
-                <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-md">
-                  {/* Stars */}
-                  <StarRating rating={t.rating} />
-
-                  {/* Quote */}
-                  <p className="mt-4 text-sm italic leading-relaxed text-[#3e4a3d]">
-                    &ldquo;{t.text}&rdquo;
-                  </p>
-
-                  {/* Author */}
-                  <div className="mt-6 flex items-center gap-3">
-                    <img
-                      src={t.image}
-                      alt={t.name}
-                      className="h-12 w-12 rounded-full object-cover"
-                      loading="lazy"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-[#1f1b17]">
-                        {t.name}
-                      </p>
-                      <p className="text-sm text-[#3e4a3d]">
-                        {t.role}, {t.company}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
+export default Testimonials;

@@ -1,61 +1,37 @@
-/* Google Fonts must be imported before @import "tailwindcss" to avoid FOUC.
-   font-display: swap is set via the ?display=swap query param in the URL.
-   Fonts: Inter (body text) and Poppins (headings), weights 400–700. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
-
-/* Tailwind v4: single import replaces @tailwind base/components/utilities */
 @import "tailwindcss";
 
-/* @theme replaces tailwind.config.js in Tailwind v4.
-   All custom tokens here become available as Tailwind utility classes.
-   Naming convention: --color-* → bg-*, text-*, border-* utilities
-                      --font-* → font-* utilities */
 @theme {
-  /* Brand colors — defined in docs/prompt.md */
-  --color-primary: #16A34A;        /* green-600  — CTAs, highlights, links */
-  --color-secondary: #F97316;      /* orange-500 — secondary buttons, badges */
-  --color-accent: #FACC15;         /* yellow-400 — decorative accents */
-  --color-background: #FAFAF9;     /* stone-50   — page background */
-  --color-text-primary: #1C1917;   /* stone-900  — headings, body text */
-  --color-text-secondary: #78716C; /* stone-500  — captions, helper text */
+  --color-primary: #10b981; /* Emerald 500 */
+  --color-primary-dark: #059669; /* Emerald 600 */
+  --color-accent: #f59e0b; /* Amber 500 */
+  --color-accent-dark: #d97706; /* Amber 600 */
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+}
 
-  /* Figma-specific tokens */
-  --color-primary-dark: #006b2c;       /* dark green — CTA buttons, nav accents */
-  --color-primary-gradient: #00873a;   /* gradient green — hover states */
-  --color-brown: #9d4300;              /* warm brown — decorative accents */
-  --color-gold: #ffe083;               /* gold — highlights, badges */
-  --color-warm-bg: #fcf2eb;            /* warm background — alternate sections */
-  --color-warm-bg-alt: #f6ece6;        /* warm background alt — subtle contrast */
-  --color-text-body: #3e4a3d;          /* body text — paragraphs */
-  --color-text-dark: #1f1b17;          /* dark text — footer bg, strong headings */
-  --color-text-muted: #6e7b6c;         /* muted text — captions, meta */
-  --color-neutral-btn: #eae1da;        /* neutral button — secondary actions */
-  --color-green-dark: #15803d;         /* green-700 — logo text, link accents */
+html {
+  scroll-behavior: smooth;
+}
 
-  /* Typography — Inter for body, Poppins for headings */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-heading: 'Poppins', 'Inter', system-ui, sans-serif;
+body {
+  @apply font-sans text-gray-900 bg-white;
+}
+
+/* Glassmorphism utility */
+.glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/20;
+}
+
+/* Custom Swiper pagination color */
+.swiper-pagination-bullet-active {
+  @apply !bg-primary;
+}
+
+.swiper-button-next, .swiper-button-prev {
+  @apply !text-primary after:!text-2xl;
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Global body defaults — these tokens map to the @theme values above */
-  body {
-    @apply bg-background text-text-primary font-sans antialiased;
-  }
-
-  /* All heading levels use the Poppins-first font stack */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-bold;
-  }
-}
-
-@layer utilities {
-  /* Prevents awkward line breaks in short headings (Chrome/Edge/Safari) */
-  .text-balance {
-    text-wrap: balance;
+    @apply tracking-tight;
   }
 }

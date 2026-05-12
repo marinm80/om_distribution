@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "testimonials": "Testimonials",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Premium Food Distribution",
+    "subtitle": "Connecting farms to your table with the highest quality standards.",
+    "cta": "See Products"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "name": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company Name",
+    "message": "Message",
+    "send": "Send Message",
+    "success": "Message sent successfully!"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "address": "Find us here"
+  }
+}

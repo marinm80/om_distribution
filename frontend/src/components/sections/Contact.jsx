@@ -1,251 +1,162 @@
-import { useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { submitContact } from '../../services/api';
+import SectionWrapper from '../layout/SectionWrapper';
+import { Send, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Contact — green card with inset rounded corners containing a contact form
-// and company contact details.
-//
-// Form fields use transparent-white styling to sit on the dark green background.
-// A honeypot hidden field ("website") catches bots.
-// Basic client-side validation is applied; server-side validation is required
-// before any data reaches the backend (see CLAUDE.md security rules).
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
-};
-
-const initialFormState = {
-  name: '',
-  email: '',
-  message: '',
-  website: '', // honeypot
-};
-
-export default function Contact() {
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, margin: '-80px' });
-
-  const [form, setForm] = useState(initialFormState);
-  const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+const Contact = () => {
+  const { t } = useTranslation();
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    company_name: '',
+    message: ''
+  });
+  const [status, setStatus] = useState('idle'); // idle, loading, success, error
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear field error on change
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validate = () => {
-    const newErrors = {};
-
-    if (!form.name.trim()) {
-      newErrors.name = 'Name is required.';
-    } else if (/[<>"';]/.test(form.name)) {
-      newErrors.name = 'Name contains invalid characters.';
-    }
-
-    if (!form.email.trim()) {
-      newErrors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) || form.email.length > 254) {
-      newErrors.email = 'Please enter a valid email address.';
-    }
-
-    if (!form.message.trim()) {
-      newErrors.message = 'Message is required.';
-    } else if (form.message.length > 1000) {
-      newErrors.message = 'Message must be under 1000 characters.';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Honeypot check — bots fill hidden fields
-    if (form.website) return;
-
-    if (!validate()) return;
-
     setStatus('loading');
-
     try {
-      // Placeholder: replace with Formspree or backend endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await submitContact(formData);
       setStatus('success');
-      setForm(initialFormState);
-    } catch {
+      setFormData({ full_name: '', email: '', phone: '', company_name: '', message: '' });
+      setTimeout(() => setStatus('idle'), 5000);
+    } catch (err) {
       setStatus('error');
+      setTimeout(() => setStatus('idle'), 5000);
     }
   };
 
-  const inputClasses =
-    'w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/60 backdrop-blur-sm transition-colors duration-200 focus:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50';
-
   return (
-    <section id="contact" className="mx-6 py-24">
-      <motion.div
-        ref={sectionRef}
-        variants={containerVariants}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-        className="mx-auto max-w-3xl rounded-3xl bg-[#006b2c] p-8 md:p-12"
-      >
-        {/* Heading */}
-        <motion.div variants={itemVariants} className="mb-8">
-          <h2 className="text-3xl font-light tracking-tight text-white">
-            Ready to start?
+    <SectionWrapper id="contact" className="bg-gray-900 text-white">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
+            {t('contact.title')}
           </h2>
-        </motion.div>
-
-        {/* Form */}
-        <motion.form
-          variants={itemVariants}
-          onSubmit={handleSubmit}
-          noValidate
-          className="space-y-4"
-        >
-          {/* Honeypot — hidden from real users, caught by bots */}
-          <div className="absolute -left-[9999px]" aria-hidden="true">
-            <label htmlFor="website">Leave blank</label>
-            <input
-              type="text"
-              id="website"
-              name="website"
-              value={form.website}
-              onChange={handleChange}
-              tabIndex={-1}
-              autoComplete="off"
-            />
+          <p className="text-gray-400 text-lg mb-10">
+            Have questions about our distribution network or products? Send us a message and our team will get back to you within 24 hours.
+          </p>
+          
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                <CheckCircle size={24} />
+              </div>
+              <p className="text-gray-300 font-medium">Verified USDA Organic Products</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
+                <CheckCircle size={24} />
+              </div>
+              <p className="text-gray-300 font-medium">Fast & Reliable Logistics Chain</p>
+            </div>
           </div>
+        </div>
 
-          {/* Name */}
-          <div>
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              value={form.name}
-              onChange={handleChange}
-              maxLength={100}
-              className={inputClasses}
-              aria-label="Your Name"
-              required
-            />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-300">{errors.name}</p>
+        <div className="bg-white rounded-3xl p-8 md:p-10 text-gray-900 shadow-2xl">
+          <AnimatePresence mode="wait">
+            {status === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle size={40} />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">{t('contact.success')}</h3>
+                <p className="text-gray-500">We've received your message and will reach out shortly.</p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">{t('contact.name')} *</label>
+                    <input
+                      required
+                      type="text"
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleChange}
+                      placeholder="John Doe"
+                      className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">{t('contact.email')} *</label>
+                    <input
+                      required
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="john@example.com"
+                      className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">{t('contact.phone')}</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">{t('contact.company')}</label>
+                    <input
+                      type="text"
+                      name="company_name"
+                      value={formData.company_name}
+                      onChange={handleChange}
+                      placeholder="Acme Corp"
+                      className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">{t('contact.message')} *</label>
+                  <textarea
+                    required
+                    name="message"
+                    rows="4"
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder="Tell us about your needs..."
+                    className="w-full px-5 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none resize-none"
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="w-full py-4 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-primary-dark transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-70"
+                >
+                  {status === 'loading' ? 'Sending...' : t('contact.send')}
+                  <Send size={18} />
+                </button>
+              </form>
             )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <input
-              type="email"
-              name="email"
-              placeholder="Business Email"
-              value={form.email}
-              onChange={handleChange}
-              maxLength={254}
-              className={inputClasses}
-              aria-label="Business Email"
-              required
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-300">{errors.email}</p>
-            )}
-          </div>
-
-          {/* Message */}
-          <div>
-            <textarea
-              name="message"
-              placeholder="Tell us what you need..."
-              value={form.message}
-              onChange={handleChange}
-              rows={5}
-              maxLength={1000}
-              className={`${inputClasses} resize-none`}
-              aria-label="Tell us what you need"
-              required
-            />
-            {errors.message && (
-              <p className="mt-1 text-sm text-red-300">{errors.message}</p>
-            )}
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={status === 'loading'}
-            className="w-full rounded-full bg-white py-4 text-base font-semibold text-[#006b2c] transition-opacity duration-200 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#006b2c] disabled:opacity-60"
-          >
-            {status === 'loading' ? 'Sending...' : 'Send Message'}
-          </button>
-
-          {/* Status messages */}
-          {status === 'success' && (
-            <p className="text-center text-sm text-green-200">
-              Message sent successfully. We will get back to you shortly.
-            </p>
-          )}
-          {status === 'error' && (
-            <p className="text-center text-sm text-red-300">
-              Something went wrong. Please try again later.
-            </p>
-          )}
-        </motion.form>
-
-        {/* Divider */}
-        <motion.div variants={itemVariants}>
-          <hr className="my-8 border-white/20" />
-        </motion.div>
-
-        {/* Contact details */}
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col gap-4 sm:flex-row sm:gap-8"
-        >
-          {/* Phone */}
-          <a
-            href="tel:+1XXXXXXXXXX"
-            className="flex items-center gap-3 text-sm text-white/80 transition-colors hover:text-white"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-            +1 (XXX) XXX-XXXX
-          </a>
-
-          {/* Email */}
-          <a
-            href="mailto:info@omdistribution.com"
-            className="flex items-center gap-3 text-sm text-white/80 transition-colors hover:text-white"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-            </svg>
-            info@omdistribution.com
-          </a>
-        </motion.div>
-      </motion.div>
-    </section>
+          </AnimatePresence>
+        </div>
+      </div>
+    </SectionWrapper>
   );
-}
+};
+
+export default Contact;
