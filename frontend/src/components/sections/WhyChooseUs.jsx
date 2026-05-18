@@ -8,8 +8,17 @@ import { motion, useInView } from 'framer-motion';
 
 const benefits = [
   {
-    title: 'On-time Deliveries',
-    description: 'Real-time tracking and 99% punctuality rate.',
+    title: 'Curated Brands',
+    description: 'Ferrero, Kinder, Nutella, Don Julio — handpicked premium brands with proven demand.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+    ),
+  },
+  {
+    title: 'On-Time Delivery',
+    description: 'Reliable logistics from our Springfield hub — your products arrive when you need them.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="1" y="3" width="15" height="13" rx="2" />
@@ -20,18 +29,8 @@ const benefits = [
     ),
   },
   {
-    title: 'Farm-fresh',
-    description: 'Minimal time between harvest and delivery.',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 17 3.5s1.5 2.5-.5 6.5c2.5-.5 4-.5 4-.5s-1 3.5-5.5 6c-1.2.7-2.5 1.2-4 1.5" />
-        <path d="M11 20c0 0-3-2-3-8" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Competitive Price',
-    description: 'Direct sourcing means better rates for you.',
+    title: 'Competitive Pricing',
+    description: 'Direct sourcing from manufacturers means better margins for your business.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="1" x2="12" y2="23" />
@@ -40,34 +39,33 @@ const benefits = [
     ),
   },
   {
-    title: 'Personal Service',
-    description: 'Dedicated account managers for every client.',
+    title: 'Personalized Service',
+    description: 'A dedicated partner who understands your market and adapts to your needs.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 17a4 4 0 0 1-8 0c0-3 2.5-6 4-7 1.5 1 4 4 4 7z" />
-        <path d="M21 17a4 4 0 0 1-8 0c0-3 2.5-6 4-7 1.5 1 4 4 4 7z" />
-        <path d="M12 7V2" />
-        <path d="M8 5l4-3 4 3" />
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
       </svg>
     ),
   },
   {
-    title: 'Wide Coverage',
-    description: 'Full logistical network across the lower 48.',
+    title: 'Global Sourcing',
+    description: 'Premium products from Europe, Latin America, and the USA under one roof.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
       </svg>
     ),
   },
   {
-    title: 'USDA Compliant',
-    description: 'Meeting the highest federal safety standards.',
+    title: 'Marketing Support',
+    description: 'We help you promote and position products with professional marketing materials.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <path d="m9 12 2 2 4-4" />
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
       </svg>
     ),
   },

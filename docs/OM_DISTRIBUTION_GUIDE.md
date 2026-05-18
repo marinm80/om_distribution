@@ -1,6 +1,6 @@
 # OM Distribution — Technical Project Guide
 **PERN Stack Bilingual Landing Page**
-**Version**: 1.0.0 | **Author**: SDD Agent Team
+**Version**: 1.1.0 | **Author**: Antigravity Agent Team
 
 ---
 
@@ -26,7 +26,7 @@ The backend follows a strict **4-Layer Repository Pattern** to ensure separation
 
 ### 2.2 Frontend (React 19 + Vite 7)
 - **Styling**: Tailwind CSS v4 with a custom-defined design system in `index.css`.
-- **State Management**: React Context API for language and session state (Lightweight, no Redux overhead).
+- **State Management**: React Context API for language and session state.
 - **Internationalization**: `i18next` with a custom `LanguageProvider` for real-time switching between English and Spanish.
 - **Animations**: `Framer Motion` for reveal effects and `Swiper.js` for touch-optimized carousels.
 
@@ -34,50 +34,59 @@ The backend follows a strict **4-Layer Repository Pattern** to ensure separation
 
 ## 3. Data Model (PostgreSQL)
 
-The database `om_markets` uses a bilingual schema strategy where localized fields coexist in the same table, avoiding complex joins or translation tables.
+The database `om_markets` uses a bilingual schema strategy where localized fields coexist in the same table.
 
 | Table | Description | Key Fields |
 |-------|-------------|------------|
 | `users` | Admin accounts | `email`, `password` (bcrypt), `role` |
 | `refresh_tokens` | Security rotation | `token`, `user_id`, `expires_at` |
 | `categories` | Product groups | `name_en`, `name_es` |
-| `products` | Item catalog | `name_en`, `name_es`, `description_en`, `description_es`, `image_url` |
+| `products` | Item catalog | `name_en`, `name_es`, `description_en`, `description_es`, `image_url`, `is_active`, `show_on_landing` |
 | `testimonials` | Social proof | `author_name`, `content_en`, `content_es`, `rating` |
 | `contacts` | B2B Leads | `full_name`, `email`, `message`, `company_name` |
 
 ---
 
-## 4. Feature Highlights
+## 4. Admin Dashboard Guide
 
-### 🌍 Real-time Internationalization
-The system detects the user's browser language and serves the content accordingly. The API supports a `?lang=` parameter that dynamically selects the correct database columns, ensuring that even dynamic content is fully localized.
+### 4.1 Product Management
+- **Add Product**: Click the "Add Product" button. You must provide names in both English and Spanish.
+- **Images**: You have two options:
+  1. **URL**: Paste a link to an image hosted online.
+  2. **Subir Archivo**: Select a file from your computer. It will be uploaded to `/uploads/` and saved automatically.
+- **Visibility**: 
+  - `Active`: If off, the product is hidden everywhere.
+  - `Show on Landing`: If on, the product appears in the home page carousel.
 
-### 🔐 Advanced Security
-- **JWT + Refresh Tokens**: Access tokens are short-lived (15m), while refresh tokens are stored in `HttpOnly` cookies to prevent XSS.
-- **Rate Limiting**: Critical endpoints (Login, Contact) are limited to 5 requests per minute to prevent brute force and spam.
-- **Sanitization**: All user inputs are sanitized before storage.
+### 4.2 Catalog Generation (PDF)
+- **Format**: The "Download Catalog" button generates a professional PDF in **Landscape (Horizontal)** orientation with **one product per page**.
+- **Layout**: Each page features the product name at the top (centered), followed by the image (centered), and finally the description.
+- **Filtering**: If you filter by category in the dashboard, the PDF will only include products from that category.
 
-### 🚀 Modern UI/UX
-- **Mobile-First Design**: Optimized for all device sizes.
-- **Glassmorphism**: Modern aesthetics using backdrop filters.
-- **Reveal Animations**: Sections animate as the user scrolls, creating a premium feel.
+### 4.3 Mass Import (Excel)
+- **Template**: Download the XLSX template to see the required format.
+- **Columns**: Ensure you match the columns exactly (`name_en`, `name_es`, `description_en`, `description_es`, `image_url`, `category_id`).
+- **Import**: Drag and drop the filled Excel file into the import area.
 
 ---
 
 ## 5. Development & Deployment
 
 ### Commands
-- **Dev**: `npm run dev` (Frontend & Backend)
-- **Testing**: `npm run test` (Jest + Supertest integration tests)
-- **Build**: `npm run build` (Vite optimization)
+- **Dev Backend**: `cd backend && npm run dev` (Port 5000)
+- **Dev Frontend**: `cd frontend && npm run dev` (Port 5173)
+- **Build**: `npm run build`
 
-### Environment Variables
-Required variables include `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, and `FRONTEND_URL`.
+### Troubleshooting "Product Creation"
+If a product fails to create, the system will now show a detailed **Database Error** message. Common issues include:
+- Missing mandatory fields (Name EN/ES).
+- Invalid Category ID.
+- Image file too large (>5MB).
 
 ---
 
 ## 6. Conclusion
-This project demonstrates a production-ready implementation of a modern landing page, combining the robustness of a structured PERN backend with the fluidity of a high-end React frontend. It is fully documented and tested, following the **Software Design Document (SDD)** protocol.
+This project demonstrates a production-ready implementation of a modern landing page, combining the robustness of a structured PERN backend with the fluidity of a high-end React frontend.
 
 ---
 *© 2026 OM Distribution. Internal Documentation.*

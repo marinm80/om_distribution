@@ -12,10 +12,10 @@ import { motion, useInView } from 'framer-motion';
 // Each entry defines the numeric target, optional prefix/suffix, display color,
 // and a human-readable label shown beneath the number.
 const STATS = [
-  { value: 500, prefix: '+',  suffix: '',  color: '#006b2c', label: 'Clients Served' },
-  { value: 10,  prefix: '+',  suffix: '',  color: '#9d4300', label: 'Years Experience' },
-  { value: 1000, prefix: '+', suffix: '',  color: '#006b2c', label: 'Daily Deliveries' },
-  { value: 50,  prefix: '',   suffix: '+', color: '#9d4300', label: 'Categories' },
+  { value: 130, prefix: '+',  suffix: '',  color: '#006b2c', label: 'Premium Products' },
+  { value: 12,  prefix: '',   suffix: '',  color: '#9d4300', label: 'Categories' },
+  { value: 100, prefix: '',   suffix: '%', color: '#006b2c', label: 'Partner Commitment' },
+  { value: 1,   prefix: '',   suffix: '',  color: '#9d4300', label: 'Hub — Springfield, MA' },
 ];
 
 // ── CountUp — animates a number from 0 → target ──

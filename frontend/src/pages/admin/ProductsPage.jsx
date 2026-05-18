@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct, bulkImportProducts, toggleProductField } from '../../services/adminApi';
+import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct, bulkImportProducts, toggleProductField, uploadImage } from '../../services/adminApi';
 import { Plus, Pencil, Trash2, X, Search, Image, Download, Upload, FileSpreadsheet, Eye, EyeOff, Power } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -31,6 +31,8 @@ const ProductsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageSource, setImageSource] = useState('url'); // 'url' or 'upload'
   const [filterCategory, setFilterCategory] = useState('all');
   const [form, setForm] = useState({ name_en:'', name_es:'', description_en:'', description_es:'', image_url:'', category_id:'', is_active:true, show_on_landing:false });
 
@@ -48,22 +50,50 @@ const ProductsPage = () => {
   const openCreate = () => {
     setEditing(null);
     setForm({ name_en:'', name_es:'', description_en:'', description_es:'', image_url:'', category_id: categories[0]?.id || '', is_active:true, show_on_landing:false });
+    setImageSource('url');
     setShowModal(true);
   };
 
   const openEdit = (p) => {
     setEditing(p);
     setForm({ name_en: p.name_en||p.name||'', name_es: p.name_es||p.name||'', description_en: p.description_en||p.description||'', description_es: p.description_es||p.description||'', image_url: p.image_url||'', category_id: p.category_id||'', is_active: p.is_active !== false, show_on_landing: p.show_on_landing === true });
+    setImageSource(p.image_url?.includes('/uploads/') ? 'upload' : 'url');
     setShowModal(true);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const res = await uploadImage(file, token);
+      setForm({ ...form, image_url: res.data.data.url });
+    } catch (err) {
+      alert('Error uploading image');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submission started with data:', form);
     try {
-      if (editing) await updateProduct(editing.id, form, token);
-      else await createProduct(form, token);
-      setShowModal(false); fetchData();
-    } catch (err) { alert(err.response?.data?.message || 'Error saving product'); }
+      if (editing) {
+        const res = await updateProduct(editing.id, form, token);
+        alert('Product updated successfully!');
+      } else {
+        const res = await createProduct(form, token);
+        alert(res.data.message || 'Product created successfully!');
+      }
+      setShowModal(false); 
+      setForm({ name_en:'', name_es:'', description_en:'', description_es:'', image_url:'', category_id:'', is_active:true, show_on_landing:false });
+      await fetchData();
+    } catch (err) { 
+      console.error('Submit Error:', err);
+      const msg = err.response?.data?.message || err.message || 'Error saving product';
+      alert(`Error: ${msg}`); 
+    }
   };
 
   const handleDelete = async (id) => {
@@ -124,44 +154,168 @@ const ProductsPage = () => {
     finally { setImporting(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
-  // ──── PDF Catalog (data URI) ────
-  const downloadCatalogPDF = () => {
-    const doc = new jsPDF();
-    doc.setFillColor(26,26,26); doc.rect(0,0,210,45,'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(28); doc.setFont('helvetica','bold');
-    doc.text('OM Distribution', 14, 25);
-    doc.setFontSize(12); doc.setFont('helvetica','normal');
-    doc.text('Product Catalog', 14, 35);
-    doc.setFontSize(10); doc.text(`Generated: ${new Date().toLocaleDateString()}`, 196, 35, { align:'right' });
-
-    const catalogProducts = filterCategory === 'all' ? products : products.filter(p => String(p.category_id) === String(filterCategory));
-    const grouped = {};
-    catalogProducts.forEach(p => { const cat = p.category_name || 'Uncategorized'; if (!grouped[cat]) grouped[cat] = []; grouped[cat].push(p); });
-
-    let yPos = 58;
-    Object.keys(grouped).forEach(cat => {
-      if (yPos > 260) { doc.addPage(); yPos = 20; }
-      doc.setFillColor(245,245,240); doc.roundedRect(14,yPos-5,182,10,2,2,'F');
-      doc.setTextColor(26,26,26); doc.setFontSize(13); doc.setFont('helvetica','bold');
-      doc.text(cat.toUpperCase(), 18, yPos+2); yPos += 14;
-      const tableData = grouped[cat].map((p,i) => [i+1, p.name||'—', (p.description||'—').substring(0,80)]);
-      autoTable(doc, {
-        startY: yPos, head:[['#','Product','Description']], body: tableData,
-        margin:{left:14,right:14},
-        headStyles:{fillColor:[26,26,26],textColor:[255,255,255],fontSize:9,fontStyle:'bold',cellPadding:4},
-        bodyStyles:{fontSize:9,cellPadding:4,textColor:[60,60,60]},
-        alternateRowStyles:{fillColor:[250,250,248]},
-        columnStyles:{0:{cellWidth:12,halign:'center'},1:{cellWidth:55,fontStyle:'bold'},2:{cellWidth:'auto'}},
-        theme:'grid', styles:{lineColor:[230,230,230],lineWidth:0.3},
-      });
-      yPos = doc.lastAutoTable.finalY + 12;
+  // ──── PDF Catalog (revamped: 1 product per page) ────
+  const downloadCatalogPDF = async () => {
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
     });
+    
+    const catalogProducts = filterCategory === 'all' ? products : products.filter(p => String(p.category_id) === String(filterCategory));
+    
+    if (catalogProducts.length === 0) {
+      alert('No products to export in this category');
+      return;
+    }
 
-    const pages = doc.internal.getNumberOfPages();
-    for (let i=1; i<=pages; i++) { doc.setPage(i); doc.setFontSize(8); doc.setTextColor(160,160,160); doc.text(`OM Distribution | Page ${i}/${pages}`,105,290,{align:'center'}); }
+    const pageWidth = 297;
+    const pageHeight = 210;
+
+    const getBase64ImageFromURL = async (url) => {
+      try {
+        const cacheBuster = url.includes('?') ? `&t=${new Date().getTime()}` : `?t=${new Date().getTime()}`;
+        const response = await fetch(url + cacheBuster, { mode: 'cors' });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            const dataURL = canvas.toDataURL('image/jpeg', 0.9);
+            URL.revokeObjectURL(objectUrl);
+            resolve(dataURL);
+          };
+          img.onerror = (error) => {
+            URL.revokeObjectURL(objectUrl);
+            reject(error);
+          };
+          img.src = objectUrl;
+        });
+      } catch (error) {
+        console.error('Error fetching image:', url, error);
+        throw error;
+      }
+    };
+
+    // Pre-load logo
+    let logoBase64 = null;
+    try {
+      logoBase64 = await getBase64ImageFromURL('/logo.jpg');
+    } catch (e) {
+      console.warn('Could not load logo for PDF');
+    }
+
+    // ── COVER PAGE ──
+    doc.setFillColor(26, 26, 26);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'JPEG', (pageWidth - 80) / 2, 40, 80, 80);
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(36);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OM Distribution', pageWidth / 2, 140, { align: 'center' });
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 200, 200);
+    doc.text('Product Catalog', pageWidth / 2, 155, { align: 'center' });
+
+    doc.setFontSize(11);
+    doc.setTextColor(150, 150, 150);
+    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    doc.text(today, pageWidth / 2, 170, { align: 'center' });
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Confidential — For Authorized Distributors Only', pageWidth / 2, pageHeight - 15, { align: 'center' });
+
+    // ── PRODUCT PAGES ──
+    for (let i = 0; i < catalogProducts.length; i++) {
+      const p = catalogProducts[i];
+      doc.addPage('a4', 'landscape');
+
+      // Header bar
+      doc.setFillColor(26, 26, 26);
+      doc.rect(0, 0, pageWidth, 28, 'F');
+
+      // Logo in header
+      if (logoBase64) {
+        doc.addImage(logoBase64, 'JPEG', 8, 3, 22, 22);
+      }
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('OM Distribution', 35, 18);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(p.category_name?.toUpperCase() || 'CATALOG', pageWidth - 14, 18, { align: 'right' });
+
+      // Thin accent line under header
+      doc.setFillColor(0, 150, 100);
+      doc.rect(0, 28, pageWidth, 1.5, 'F');
+
+      // Product Name
+      doc.setTextColor(26, 26, 26);
+      doc.setFontSize(26);
+      doc.setFont('helvetica', 'bold');
+      const name = p.name_es || p.name || 'Unnamed Product';
+      const nameLines = doc.splitTextToSize(name, pageWidth - 40);
+      doc.text(nameLines, pageWidth / 2, 48, { align: 'center' });
+      
+      let nextY = 48 + (nameLines.length * 12);
+
+      // Product Image
+      if (p.image_url) {
+        try {
+          const base64 = await getBase64ImageFromURL(p.image_url);
+          const imgWidth = 150;
+          const imgHeight = 95;
+          const x = (pageWidth - imgWidth) / 2;
+          doc.addImage(base64, 'JPEG', x, nextY + 5, imgWidth, imgHeight);
+          nextY += imgHeight + 15;
+        } catch (e) {
+          doc.setFontSize(10); doc.setTextColor(150, 150, 150);
+          doc.text('[Image unavailable]', pageWidth / 2, nextY + 20, { align: 'center' });
+          nextY += 30;
+        }
+      } else {
+        doc.setFontSize(10); doc.setTextColor(150, 150, 150);
+        doc.text('[No image]', pageWidth / 2, nextY + 20, { align: 'center' });
+        nextY += 30;
+      }
+
+      // Description
+      doc.setTextColor(60, 60, 60);
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'normal');
+      const desc = p.description_es || p.description || '';
+      const descLines = doc.splitTextToSize(desc, pageWidth - 60);
+      doc.text(descLines, pageWidth / 2, nextY + 5, { align: 'center' });
+
+      // Footer
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, pageHeight - 18, pageWidth - 20, pageHeight - 18);
+      doc.setFontSize(8);
+      doc.setTextColor(160, 160, 160);
+      doc.text(`OM Distribution  •  Product Catalog  •  Page ${i + 1} of ${catalogProducts.length}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    }
 
     const pdfBytes = doc.output('arraybuffer');
-    downloadFile(new Uint8Array(pdfBytes), `OM_Distribution_Catalog_${new Date().toISOString().slice(0,10)}.pdf`, 'application/pdf');
+    downloadFile(new Uint8Array(pdfBytes), `OM_Catalog_${new Date().toISOString().slice(0,10)}.pdf`, 'application/pdf');
   };
 
   const filtered = products.filter(p => {
@@ -267,7 +421,28 @@ const ProductsPage = () => {
               </div>
               <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Description (EN)</label><textarea value={form.description_en} onChange={e => setForm({...form, description_en: e.target.value})} rows="2" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a] resize-none" /></div>
               <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Description (ES)</label><textarea value={form.description_es} onChange={e => setForm({...form, description_es: e.target.value})} rows="2" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a] resize-none" /></div>
-              <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Image URL</label><input value={form.image_url} onChange={e => setForm({...form, image_url: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a]" placeholder="https://..." /></div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer">
+                    <input type="radio" name="imgSource" checked={imageSource === 'url'} onChange={() => setImageSource('url')} /> Image URL
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer">
+                    <input type="radio" name="imgSource" checked={imageSource === 'upload'} onChange={() => setImageSource('upload')} /> Upload Image
+                  </label>
+                </div>
+                
+                {imageSource === 'url' ? (
+                  <input value={form.image_url} onChange={e => setForm({...form, image_url: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a]" placeholder="https://..." />
+                ) : (
+                  <div className="flex gap-2">
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
+                    {uploadingImage && <div className="w-5 h-5 border-2 border-gray-200 border-t-[#1a1a1a] rounded-full animate-spin self-center" />}
+                  </div>
+                )}
+                {form.image_url && <div className="flex items-center gap-2 text-[10px] text-gray-400 overflow-hidden truncate">Current: {form.image_url}</div>}
+              </div>
+
               <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Category</label>
                 <select value={form.category_id} onChange={e => setForm({...form, category_id: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a]">
                   <option value="">Select category</option>

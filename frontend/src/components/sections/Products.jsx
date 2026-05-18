@@ -55,7 +55,7 @@ const Products = () => {
         className="pb-16"
       >
         {products.map((product) => (
-          <SwiperSlide key={product.id}>
+          <SwiperSlide key={product.id} className="!h-auto">
             <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-100 h-full flex flex-col">
               <div className="h-64 overflow-hidden">
                 <img

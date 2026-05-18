@@ -28,9 +28,10 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <span className={`text-2xl font-bold ${scrolled ? 'text-primary' : 'text-white'}`}>OM Distribution</span>
-          </div>
+          <a href="#home" className="flex-shrink-0 flex items-center gap-2">
+            <img src="/logo.jpg" alt="OM Distribution" className="h-10 w-auto rounded" />
+            <span className={`text-xl font-bold hidden sm:inline ${scrolled ? 'text-primary' : 'text-white'}`}>OM Distribution</span>
+          </a>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
