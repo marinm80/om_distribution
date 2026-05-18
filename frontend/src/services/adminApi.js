@@ -28,6 +28,17 @@ export const bulkImportProducts = (products, token) =>
 export const toggleProductField = (id, field, value, token) =>
   api.patch(`/products/${id}/toggle`, { field, value }, { headers: { Authorization: `Bearer ${token}` } });
 
+export const uploadImage = (file, token) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return api.post('/upload/image', formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
 // Categories (Admin)
 export const getAdminCategories = (token) =>
   api.get('/categories', { headers: { Authorization: `Bearer ${token}` } });

@@ -70,17 +70,31 @@ class ProductRepository {
 
   async create(productData) {
     const { name_en, name_es, description_en, description_es, image_url, category_id, is_active = true, show_on_landing = false } = productData;
+    
+    // Normalize category_id to integer or null
+    let finalCategoryId = null;
+    if (category_id && category_id !== '') {
+      finalCategoryId = parseInt(category_id, 10);
+      if (isNaN(finalCategoryId)) finalCategoryId = null;
+    }
+
     const query = `
       INSERT INTO products (name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
-    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing]);
+    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url || null, finalCategoryId, is_active, show_on_landing]);
     return rows[0];
   }
 
   async update(id, productData) {
     const { name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing } = productData;
+    
+    let finalCategoryId = null;
+    if (category_id && category_id !== '') {
+      finalCategoryId = parseInt(category_id, 10);
+      if (isNaN(finalCategoryId)) finalCategoryId = null;
+    }
     const query = `
       UPDATE products 
       SET name_en = $1, name_es = $2, description_en = $3, description_es = $4, 
@@ -88,7 +102,7 @@ class ProductRepository {
       WHERE id = $9
       RETURNING *
     `;
-    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, category_id, is_active, show_on_landing, id]);
+    const { rows } = await pool.query(query, [name_en, name_es, description_en, description_es, image_url, finalCategoryId, is_active, show_on_landing, id]);
     return rows[0];
   }
 

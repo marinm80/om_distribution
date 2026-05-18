@@ -42,7 +42,7 @@ const Contact = () => {
             {t('contact.title')}
           </h2>
           <p className="text-gray-400 text-lg mb-10">
-            Have questions about our distribution network or products? Send us a message and our team will get back to you within 24 hours.
+            {t('contact.subtitle')}
           </p>
           
           <div className="space-y-6">
@@ -50,13 +50,13 @@ const Contact = () => {
               <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
                 <CheckCircle size={24} />
               </div>
-              <p className="text-gray-300 font-medium">Verified USDA Organic Products</p>
+              <p className="text-gray-300 font-medium">130+ Premium Brand Products</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
                 <CheckCircle size={24} />
               </div>
-              <p className="text-gray-300 font-medium">Fast & Reliable Logistics Chain</p>
+              <p className="text-gray-300 font-medium">Reliable Logistics — Philadelphia, CT, MA, RI & NY</p>
             </div>
           </div>
         </div>

@@ -3,15 +3,26 @@
     "home": "Inicio",
     "products": "Productos",
     "testimonials": "Testimonios",
-    "contact": "Contacto"
+    "contact": "Contacto",
+    "about": "Nosotros"
   },
   "hero": {
-    "title": "Distribución de Alimentos Premium",
-    "subtitle": "Conectando granjas con su mesa con los más altos estándares de calidad.",
+    "title": "Tu Socio Estratégico en Distribución de Marcas Líderes",
+    "subtitle": "Conectamos marcas de clase mundial con tu comunidad. Portafolio curado, logística confiable, crecimiento compartido — sirviendo a Philadelphia, CT, MA, RI y NY.",
     "cta": "Ver Productos"
   },
+  "about": {
+    "heading": "Más Que un Distribuidor — Somos Tu Aliado para el Éxito",
+    "pillar1_title": "Portafolio Curado",
+    "pillar1_desc": "Marcas premium de alta rotación como Ferrero, Kinder, Nutella, Don Julio y más — cuidadosamente seleccionadas para tu mercado.",
+    "pillar2_title": "Logística Confiable",
+    "pillar2_desc": "Entregas puntuales en las que puedes confiar. Nuestra red de distribución garantiza servicio rápido y eficiente a Philadelphia, CT, MA, RI y NY.",
+    "pillar3_title": "Crecimiento Compartido",
+    "pillar3_desc": "Somos más que proveedores — somos socios en tu rentabilidad con asesoría personalizada y apoyo en mercadeo."
+  },
   "contact": {
-    "title": "Contáctenos",
+    "title": "Hablemos de Cómo Podemos Crecer Juntos",
+    "subtitle": "Contáctenos hoy para realizar su pedido o para solicitar más información sobre nuestro portafolio y servicios.",
     "name": "Nombre Completo",
     "email": "Correo Electrónico",
     "phone": "Teléfono",
@@ -22,6 +33,7 @@
   },
   "footer": {
     "rights": "Todos los derechos reservados.",
-    "address": "Encuéntranos aquí"
+    "description": "Tu socio estratégico en la distribución de marcas líderes. Prestando servicios en Philadelphia, Connecticut, Massachusetts y Rhode Island, con clientes en New York.",
+    "address": "Springfield, Massachusetts"
   }
 }

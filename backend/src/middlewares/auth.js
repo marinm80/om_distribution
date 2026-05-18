@@ -4,9 +4,11 @@ const AppError = require('../utils/AppError');
 const protect = (req, res, next) => {
   let token;
 
-  // 1. Obtener token del header
+  // 1. Obtener token del header o query param (para descargas de archivos)
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.query.token) {
+    token = req.query.token;
   }
 
   if (!token) {

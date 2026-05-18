@@ -1,0 +1,65 @@
+services:
+  # 1. BASE DE DATOS (PostgreSQL)
+  om-db:
+    image: postgres:15-alpine
+    container_name: om-distribution-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-om_markets}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rootpass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - om_internal_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 2. BACKEND (Express.js)
+  om-backend:
+    build:
+      context: ./backend
+    container_name: om-distribution-backend
+    restart: unless-stopped
+    depends_on:
+      om-db:
+        condition: service_healthy
+    environment:
+      # Se apunta a 'om-db' de forma interna y automática
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-rootpass}@om-db:5432/${POSTGRES_DB:-om_markets}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      PORT: 5000
+      NODE_ENV: production
+    volumes:
+      - uploads_data:/app/public/uploads
+    networks:
+      - proxy_network       # Red para que Nginx Proxy Manager lo localice
+      - om_internal_net     # Red privada para hablar con la base de datos
+
+  # 3. FRONTEND (React + Vite)
+  om-frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: om-distribution-frontend
+    restart: unless-stopped
+    depends_on:
+      - om-backend
+    networks:
+      - proxy_network       # Red para que Nginx Proxy Manager lo localice
+
+networks:
+  proxy_network:
+    external: true          # Conecta con tu Nginx global de AWS
+  om_internal_net:
+    driver: bridge          # Red privada exclusiva para este proyecto
+
+volumes:
+  postgres_data:
+  uploads_data:
