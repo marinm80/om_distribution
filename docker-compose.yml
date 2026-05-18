@@ -10,6 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rootpass}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/database:/docker-entrypoint-initdb.d
     networks:
       - om_internal_net
     healthcheck:

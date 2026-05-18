@@ -9,6 +9,7 @@ COPY . .
 # Inyeccion de la variable de entorno de produccion para Vite
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm run build
 

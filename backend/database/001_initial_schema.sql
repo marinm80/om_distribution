@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS products (
     description_es TEXT,
     image_url TEXT,
     category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+    is_active BOOLEAN DEFAULT true,
+    show_on_landing BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

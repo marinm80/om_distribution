@@ -1,9 +1,21 @@
 -- Seed de Categorías
-INSERT INTO categories (name_en, name_es) VALUES 
-('Grains', 'Granos'),
-('Meat', 'Carnes'),
-('Vegetales', 'Vegetales'),
-('Packaged Goods', 'Productos Empacados')
+INSERT INTO categories (id, name_en, name_es) VALUES 
+(1, 'Grains', 'Granos'),
+(2, 'Meat', 'Carnes'),
+(3, 'Vegetales', 'Vegetales'),
+(4, 'Packaged Goods', 'Productos Empacados'),
+(5, 'Chocolates & Confections', 'Chocolates y Confitería'),
+(6, 'Crackers & Cookies', 'Galletas y Crackers'),
+(7, 'Candy & Lollipops', 'Dulces y Paletas'),
+(8, 'Seasonings & Condiments', 'Sazones y Condimentos'),
+(9, 'Nutella & Spreads', 'Nutella y Untables'),
+(10, 'Gummy Candy', 'Gomitas'),
+(11, 'Cleaning & Auto Care', 'Limpieza y Cuidado Auto'),
+(12, 'Mints & Gum', 'Mentas y Chicles'),
+(13, 'Traditional Sweets', 'Dulces Tradicionales'),
+(14, 'Coffee', 'Café'),
+(15, 'Snacks', 'Snacks'),
+(16, 'Deli & Meats', 'Embutidos y Carnes')
 ON CONFLICT DO NOTHING;
 
 -- Seed de Productos
