@@ -16,17 +16,10 @@ El contendor de base de datos compartida anterior (psql/mariadb/mongo) se elimin
 
 ## Primera vez (migración desde contenedor compartido)
 
-### 1. Preparar el dump desde el contenedor viejo
+La base de datos actual está incluida en `backend/database/docker-init/01_dump.sql`.
+PostgreSQL la carga **automáticamente** al arrancar con un volumen vacío — no hace falta importar nada a mano.
 
-```bash
-# Identificar el nombre del contenedor viejo con PostgreSQL
-docker ps
-
-# Exportar la DB
-docker exec <contenedor-viejo> pg_dump -U postgres om_markets > om_markets_dump.sql
-```
-
-### 2. Configurar el entorno en el VPS
+### 1. Configurar el entorno en el VPS
 
 ```bash
 git clone <repo-url>   # o git pull si ya existe
@@ -45,19 +38,26 @@ FRONTEND_URL=https://yourdomain.com
 VITE_API_URL=https://api.yourdomain.com/api
 ```
 
-### 3. Ejecutar la migración
+### 2. Levantar el stack
 
 ```bash
-# El script levanta el contenedor de DB, importa el dump y levanta el stack completo
-bash scripts/migrate-to-docker.sh om_markets_dump.sql
+docker compose up -d --build
 ```
 
-### 4. Verificar
+Al ser el primer arranque con volumen vacío, PostgreSQL ejecuta automáticamente `01_dump.sql` y carga el schema + todos los datos actuales.
+
+### 3. Verificar
 
 ```bash
-docker compose ps           # todos en "running"
+docker compose ps                                  # todos en "running"
 docker compose logs om-backend --tail=20
-curl https://api.yourdomain.com/api/health
+curl https://api.yourdomain.com/api/health         # { success: true, db: "connected" }
+```
+
+### 4. Copiar las imágenes de productos al volumen
+
+```bash
+docker compose cp backend/public/uploads/. om-distribution-backend:/app/public/uploads/
 ```
 
 ### 5. Eliminar el contenedor viejo
@@ -66,8 +66,7 @@ Solo cuando hayas confirmado que todo funciona:
 ```bash
 docker stop <nombre-contenedor-viejo>
 docker rm <nombre-contenedor-viejo>
-# Si el contenedor viejo tenía un volumen exclusivo que ya no necesitas:
-# docker volume rm <nombre-volumen-viejo>
+# docker volume rm <nombre-volumen-viejo>   # si tenía volumen exclusivo
 ```
 
 ---

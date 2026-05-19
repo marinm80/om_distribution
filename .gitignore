@@ -34,10 +34,10 @@ yarn-error.log*
 .cache
 *.log
 
-# Database dumps (datos de producción — nunca en git)
+# Database dumps raíz (datos de producción — nunca en git)
 *.sql.bak
-*_dump.sql
-om_markets_dump.sql
+/om_markets_dump.sql
+/backup_*.sql
 
 # Docs generados
 docs/*.pdf
