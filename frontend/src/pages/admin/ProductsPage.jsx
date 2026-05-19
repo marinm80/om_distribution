@@ -2,9 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct, bulkImportProducts, toggleProductField, uploadImage } from '../../services/adminApi';
 import { Plus, Pencil, Trash2, X, Search, Image as ImageIcon, Download, Upload, FileSpreadsheet, Eye, EyeOff, Power } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+// jsPDF, jspdf-autotable and xlsx are loaded on demand to keep the initial chunk small
 
 // Robust cross-browser download using data URI
 const downloadFile = (uint8Array, filename, mimeType) => {
@@ -110,7 +108,8 @@ const ProductsPage = () => {
   };
 
   // ──── Template Download (data URI) ────
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx');
     const templateData = [
       { name_en:'Premium Rice', name_es:'Arroz Premium', description_en:'High quality long grain rice.', description_es:'Arroz de grano largo de alta calidad.', image_url:'https://example.com/rice.jpg', category_id:1, is_active:'TRUE', show_on_landing:'FALSE' },
       { name_en:'Organic Beans', name_es:'Frijoles Orgánicos', description_en:'Farm fresh organic beans.', description_es:'Frijoles orgánicos frescos.', image_url:'https://example.com/beans.jpg', category_id:1, is_active:'TRUE', show_on_landing:'TRUE' },
@@ -134,6 +133,7 @@ const ProductsPage = () => {
     if (!file) return;
     setImporting(true);
     try {
+      const XLSX = await import('xlsx');
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data);
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
@@ -156,6 +156,10 @@ const ProductsPage = () => {
 
   // ──── PDF Catalog (revamped: 1 product per page) ────
   const downloadCatalogPDF = async () => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
