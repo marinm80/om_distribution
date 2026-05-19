@@ -34,6 +34,9 @@ yarn-error.log*
 .cache
 *.log
 
+# Override local de docker-compose (no va al VPS)
+docker-compose.override.yml
+
 # Database dumps raíz (datos de producción — nunca en git)
 *.sql.bak
 /om_markets_dump.sql

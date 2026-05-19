@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rootpass}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql   # pg18+ usa esta ruta (no /data)
       # Scripts en esta carpeta se ejecutan automáticamente en el PRIMER arranque (volumen vacío)
       - ./backend/database/docker-init:/docker-entrypoint-initdb.d:ro
     networks:
