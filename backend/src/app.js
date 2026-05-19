@@ -16,11 +16,13 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const categoryRoutes = require('./routes/category.routes');
 const userRoutes = require('./routes/user.routes');
 const uploadRoutes = require('./routes/upload.routes');
+const proxyRoutes = require('./routes/proxy.routes');
 const path = require('path');
 
 validateEnv();
 
 const app = express();
+app.set('trust proxy', 1); // Trust nginx proxy so req.protocol returns https correctly
 
 // Middlewares de Seguridad y Logs
 app.use(helmet({
@@ -34,8 +36,12 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Servir archivos estáticos
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+// Servir archivos estáticos (CORS abierto: las imágenes de producto son públicas)
+app.use('/uploads', (req, res, next) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../public/uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -46,6 +52,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/proxy', proxyRoutes);
 
 // Health Check
 app.get('/api/health', async (req, res, next) => {

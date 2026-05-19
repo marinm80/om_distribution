@@ -1,52 +1,98 @@
-# OM Distribution API Documentation
+# API Reference
 
-## Endpoints Públicos
+Base URL: `/api`
 
-### Health Check
-- **URL**: `/api/health`
-- **Method**: `GET`
-- **Description**: Verifies API and Database connectivity.
+All protected endpoints require `Authorization: Bearer <accessToken>` header.
 
-### Productos
-- **URL**: `/api/products`
-- **Method**: `GET`
-- **Params**: `lang` (optional: `en` | `es`, default: `es`)
-- **Response**: List of products with localized names and descriptions.
+---
 
-### Categorías
-- **URL**: `/api/products/categories`
-- **Method**: `GET`
-- **Params**: `lang` (optional)
+## Auth
 
-### Testimonios
-- **URL**: `/api/testimonials`
-- **Method**: `GET`
-- **Params**: `lang` (optional)
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/auth/login` | — | Login, returns accessToken + sets refresh cookie |
+| POST | `/auth/refresh` | cookie | Rotate refresh token, returns new accessToken |
+| POST | `/auth/logout` | — | Clears refresh token cookie |
+| POST | `/auth/forgot-password` | — | Send password reset email |
 
-### Contacto (Leads)
-- **URL**: `/api/contact`
-- **Method**: `POST`
-- **Body**:
-```json
-{
-  "full_name": "string",
-  "email": "string",
-  "phone": "string (optional)",
-  "company_name": "string (optional)",
-  "message": "string"
-}
-```
+---
 
-## Endpoints de Administración (Protegidos)
+## Products
 
-Requieren `Authorization: Bearer <access_token>` y rol `admin`.
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/products` | — | All products (`?lang=es\|en`) |
+| GET | `/products/landing` | — | Active + show_on_landing products only |
+| GET | `/products/:id` | — | Single product |
+| POST | `/products` | admin | Create product |
+| PATCH | `/products/:id` | admin | Update product |
+| PATCH | `/products/:id/toggle` | admin | Toggle `is_active` or `show_on_landing` |
+| DELETE | `/products/:id` | admin | Delete product |
+| POST | `/products/bulk` | admin | Bulk import array of products |
 
-### Auth
-- **POST** `/api/auth/login`: Email y Password. Retorna AccessToken y setea Cookie RefreshToken.
-- **POST** `/api/auth/refresh`: Usa la cookie para generar un nuevo AccessToken.
-- **POST** `/api/auth/logout`: Invalida el token.
+---
 
-### Gestión de Productos
-- **POST** `/api/products`: Crear producto.
-- **PATCH** `/api/products/:id`: Editar producto.
-- **DELETE** `/api/products/:id`: Eliminar producto.
+## Categories
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/categories` | — | All categories |
+| POST | `/categories` | admin | Create category |
+| PATCH | `/categories/:id` | admin | Update category |
+| DELETE | `/categories/:id` | admin | Delete category |
+
+---
+
+## Upload
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/upload/image` | admin | Upload product image (multipart/form-data, field: `image`, max 5MB) |
+
+Returns: `{ data: { url: "https://host/uploads/filename.jpg" } }`
+
+---
+
+## Proxy
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/proxy/image?url=...` | — | Server-side proxy for external images (bypasses CORS). Blocks private IPs. |
+
+---
+
+## Testimonials
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/testimonials` | — | All testimonials (`?lang=es\|en`) |
+| POST | `/testimonials` | admin | Create testimonial |
+| DELETE | `/testimonials/:id` | admin | Delete testimonial |
+
+---
+
+## Contact
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/contact` | — | Submit contact form (rate-limited) |
+| GET | `/contact` | admin | List all contact submissions |
+
+---
+
+## Users
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/users` | admin | List users |
+| POST | `/users` | admin | Create user |
+| PATCH | `/users/:id` | admin | Update user |
+| DELETE | `/users/:id` | admin | Delete user |
+
+---
+
+## Health
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/health` | — | Returns `{ success: true, data: { db: "connected" } }` |

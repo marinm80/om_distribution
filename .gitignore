@@ -33,3 +33,14 @@ yarn-error.log*
 # Cache
 .cache
 *.log
+
+# Database dumps (datos de producción — nunca en git)
+*.sql.bak
+*_dump.sql
+om_markets_dump.sql
+
+# Docs generados
+docs/*.pdf
+
+# Excel de trabajo interno
+docs/OM_Products_imagenes_v2.xlsx

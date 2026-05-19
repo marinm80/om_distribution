@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct, bulkImportProducts, toggleProductField, uploadImage } from '../../services/adminApi';
-import { Plus, Pencil, Trash2, X, Search, Image, Download, Upload, FileSpreadsheet, Eye, EyeOff, Power } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Search, Image as ImageIcon, Download, Upload, FileSpreadsheet, Eye, EyeOff, Power } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -162,8 +162,11 @@ const ProductsPage = () => {
       format: 'a4'
     });
     
-    const catalogProducts = filterCategory === 'all' ? products : products.filter(p => String(p.category_id) === String(filterCategory));
-    
+    const activeProducts = products.filter(p => p.is_active !== false);
+    const catalogProducts = filterCategory === 'all'
+      ? activeProducts
+      : activeProducts.filter(p => String(p.category_id) === String(filterCategory));
+
     if (catalogProducts.length === 0) {
       alert('No products to export in this category');
       return;
@@ -172,47 +175,78 @@ const ProductsPage = () => {
     const pageWidth = 297;
     const pageHeight = 210;
 
-    const getBase64ImageFromURL = async (url) => {
-      try {
-        const cacheBuster = url.includes('?') ? `&t=${new Date().getTime()}` : `?t=${new Date().getTime()}`;
-        const response = await fetch(url + cacheBuster, { mode: 'cors' });
-        if (!response.ok) throw new Error('Network response was not ok');
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL('image/jpeg', 0.9);
-            URL.revokeObjectURL(objectUrl);
-            resolve(dataURL);
-          };
-          img.onerror = (error) => {
-            URL.revokeObjectURL(objectUrl);
-            reject(error);
-          };
-          img.src = objectUrl;
-        });
-      } catch (error) {
-        console.error('Error fetching image:', url, error);
-        throw error;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+    // For uploaded images: fix origin (handles http→https mismatch behind nginx)
+    // For external images: route through backend proxy to avoid CDN CORS restrictions
+    const normalizeImageUrl = (url) => {
+      if (!url) return url;
+      const uploadsMatch = url.match(/(\/uploads\/.+)/);
+      if (uploadsMatch) {
+        return apiUrl.replace(/\/api\/?$/, '') + uploadsMatch[1];
       }
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return `${apiUrl}/proxy/image?url=${encodeURIComponent(url)}`;
+      }
+      return url;
     };
 
-    // Pre-load logo
+    const getBase64ImageFromURL = (url) => {
+      const resolved = normalizeImageUrl(url);
+      const sep = resolved.includes('?') ? '&' : '?';
+      const src = resolved + sep + '_t=' + Date.now();
+
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        const timer = setTimeout(() => reject(new Error('Image load timeout: ' + resolved)), 15000);
+
+        img.onload = () => {
+          clearTimeout(timer);
+          try {
+            const w = img.naturalWidth || img.width || 400;
+            const h = img.naturalHeight || img.height || 300;
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
+          } catch (e) {
+            reject(e);
+          }
+        };
+
+        img.onerror = () => {
+          clearTimeout(timer);
+          reject(new Error('Image failed to load: ' + resolved));
+        };
+
+        img.src = src;
+      });
+    };
+
+    // Pre-load logo + all product images in parallel
     let logoBase64 = null;
     try {
       logoBase64 = await getBase64ImageFromURL('/logo.jpg');
     } catch (e) {
       console.warn('Could not load logo for PDF');
     }
+
+    const imageCache = new Map();
+    await Promise.allSettled(
+      catalogProducts
+        .filter(p => p.image_url)
+        .map(p =>
+          getBase64ImageFromURL(p.image_url)
+            .then(b64 => imageCache.set(p.image_url, b64))
+            .catch(e => console.error(`[PDF] Image failed for "${p.name_es || p.name}" — URL: ${p.image_url} — Error: ${e.message}`))
+        )
+    );
 
     // ── COVER PAGE ──
     doc.setFillColor(26, 26, 26);
@@ -278,23 +312,17 @@ const ProductsPage = () => {
       
       let nextY = 48 + (nameLines.length * 12);
 
-      // Product Image
-      if (p.image_url) {
-        try {
-          const base64 = await getBase64ImageFromURL(p.image_url);
-          const imgWidth = 150;
-          const imgHeight = 95;
-          const x = (pageWidth - imgWidth) / 2;
-          doc.addImage(base64, 'JPEG', x, nextY + 5, imgWidth, imgHeight);
-          nextY += imgHeight + 15;
-        } catch (e) {
-          doc.setFontSize(10); doc.setTextColor(150, 150, 150);
-          doc.text('[Image unavailable]', pageWidth / 2, nextY + 20, { align: 'center' });
-          nextY += 30;
-        }
+      // Product Image (uses pre-loaded cache)
+      const base64 = p.image_url ? imageCache.get(p.image_url) : null;
+      if (base64) {
+        const imgWidth = 150;
+        const imgHeight = 95;
+        const x = (pageWidth - imgWidth) / 2;
+        doc.addImage(base64, 'JPEG', x, nextY + 5, imgWidth, imgHeight);
+        nextY += imgHeight + 15;
       } else {
         doc.setFontSize(10); doc.setTextColor(150, 150, 150);
-        doc.text('[No image]', pageWidth / 2, nextY + 20, { align: 'center' });
+        doc.text(p.image_url ? '[Image unavailable]' : '[No image]', pageWidth / 2, nextY + 20, { align: 'center' });
         nextY += 30;
       }
 
@@ -374,7 +402,7 @@ const ProductsPage = () => {
               <tr key={p.id} className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${p.is_active === false ? 'opacity-50' : ''}`}>
                 <td className="px-4 py-3 text-sm text-gray-400">{i+1}</td>
                 <td className="px-4 py-3">
-                  {p.image_url ? <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover" /> : <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><Image size={16} className="text-gray-300" /></div>}
+                  {p.image_url ? <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover" /> : <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><ImageIcon size={16} className="text-gray-300" /></div>}
                 </td>
                 <td className="px-4 py-3">
                   <p className="text-sm font-semibold text-gray-900">{p.name}</p>

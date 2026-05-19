@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -10,15 +11,21 @@ import Products from './components/sections/Products';
 import Testimonials from './components/sections/Testimonials';
 import Contact from './components/sections/Contact';
 
-// Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminLayout from './pages/admin/AdminLayout';
-import DashboardHome from './pages/admin/DashboardHome';
-import ProductsPage from './pages/admin/ProductsPage';
-import CategoriesPage from './pages/admin/CategoriesPage';
-import TestimonialsPage from './pages/admin/TestimonialsPage';
-import ContactsPage from './pages/admin/ContactsPage';
-import UsersPage from './pages/admin/UsersPage';
+// Admin Pages (lazy-loaded: keeps jsPDF/xlsx out of the landing page bundle)
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const DashboardHome = lazy(() => import('./pages/admin/DashboardHome'));
+const ProductsPage = lazy(() => import('./pages/admin/ProductsPage'));
+const CategoriesPage = lazy(() => import('./pages/admin/CategoriesPage'));
+const TestimonialsPage = lazy(() => import('./pages/admin/TestimonialsPage'));
+const ContactsPage = lazy(() => import('./pages/admin/ContactsPage'));
+const UsersPage = lazy(() => import('./pages/admin/UsersPage'));
+
+const AdminSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1a1a1a] rounded-full animate-spin" />
+  </div>
+);
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -55,27 +62,29 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          {/* Landing Page */}
-          <Route path="/" element={<LandingPage />} />
+        <Suspense fallback={<AdminSpinner />}>
+          <Routes>
+            {/* Landing Page */}
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Admin Login */}
-          <Route path="/admin/login" element={<AdminLogin />} />
+            {/* Admin Login */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* Admin Dashboard (Protected) */}
-          <Route path="/admin" element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<DashboardHome />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="categories" element={<CategoriesPage />} />
-            <Route path="testimonials" element={<AdminOnly><TestimonialsPage /></AdminOnly>} />
-            <Route path="contacts" element={<AdminOnly><ContactsPage /></AdminOnly>} />
-            <Route path="users" element={<AdminOnly><UsersPage /></AdminOnly>} />
-          </Route>
-        </Routes>
+            {/* Admin Dashboard (Protected) */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<DashboardHome />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route path="categories" element={<CategoriesPage />} />
+              <Route path="testimonials" element={<AdminOnly><TestimonialsPage /></AdminOnly>} />
+              <Route path="contacts" element={<AdminOnly><ContactsPage /></AdminOnly>} />
+              <Route path="users" element={<AdminOnly><UsersPage /></AdminOnly>} />
+            </Route>
+          </Routes>
+        </Suspense>
       </Router>
     </AuthProvider>
   );

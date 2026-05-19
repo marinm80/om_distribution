@@ -1,7 +1,7 @@
 services:
-  # 1. BASE DE DATOS (PostgreSQL)
+  # 1. BASE DE DATOS (PostgreSQL 18)
   om-db:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     container_name: om-distribution-db
     restart: unless-stopped
     environment:
@@ -10,6 +10,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rootpass}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Scripts en esta carpeta se ejecutan automáticamente en el PRIMER arranque (volumen vacío)
+      - ./backend/database/docker-init:/docker-entrypoint-initdb.d:ro
     networks:
       - om_internal_net
     healthcheck:
@@ -28,7 +30,6 @@ services:
       om-db:
         condition: service_healthy
     environment:
-      # Se apunta a 'om-db' de forma interna y automática
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-rootpass}@om-db:5432/${POSTGRES_DB:-om_markets}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
@@ -38,8 +39,8 @@ services:
     volumes:
       - uploads_data:/app/public/uploads
     networks:
-      - proxy_network       # Red para que Nginx Proxy Manager lo localice
-      - om_internal_net     # Red privada para hablar con la base de datos
+      - proxy_network
+      - om_internal_net
 
   # 3. FRONTEND (React + Vite)
   om-frontend:
@@ -52,13 +53,13 @@ services:
     depends_on:
       - om-backend
     networks:
-      - proxy_network       # Red para que Nginx Proxy Manager lo localice
+      - proxy_network
 
 networks:
   proxy_network:
-    external: true          # Conecta con tu Nginx global de AWS
+    external: true
   om_internal_net:
-    driver: bridge          # Red privada exclusiva para este proyecto
+    driver: bridge
 
 volumes:
   postgres_data:

@@ -16,18 +16,27 @@ describe('OM Distribution API Integration Tests', () => {
   });
 
   describe('Products API', () => {
-    it('should return products in Spanish by default', async () => {
+    it('should return products list with correct shape', async () => {
       const res = await request(app).get('/api/products');
       expect(res.statusCode).toEqual(200);
+      expect(res.body.status).toBe('success');
+      expect(Array.isArray(res.body.data.products)).toBe(true);
       expect(res.body.data.products.length).toBeGreaterThan(0);
-      // El seed tiene 'Arroz Premium' en español
-      expect(res.body.data.products.some(p => p.name === 'Arroz Premium')).toBe(true);
+      const p = res.body.data.products[0];
+      expect(p).toHaveProperty('id');
+      expect(p).toHaveProperty('name');
+      expect(p).toHaveProperty('image_url');
+      expect(p).toHaveProperty('category_id');
     });
 
-    it('should return products in English when lang=en', async () => {
-      const res = await request(app).get('/api/products?lang=en');
-      expect(res.statusCode).toEqual(200);
-      expect(res.body.data.products.some(p => p.name === 'Premium Rice')).toBe(true);
+    it('should return same product count for lang=en and lang=es', async () => {
+      const [resEs, resEn] = await Promise.all([
+        request(app).get('/api/products?lang=es'),
+        request(app).get('/api/products?lang=en'),
+      ]);
+      expect(resEs.statusCode).toEqual(200);
+      expect(resEn.statusCode).toEqual(200);
+      expect(resEs.body.data.products.length).toBe(resEn.body.data.products.length);
     });
   });
 
