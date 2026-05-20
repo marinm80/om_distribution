@@ -1,21 +1,25 @@
 services:
-  # 1. BASE DE DATOS (PostgreSQL 18)
-  om-db:
-    image: postgres:18-alpine
-    container_name: om-distribution-db
+
+  # 1.5 BASE DE DATOS (MySQL 8) - New DB
+  om-mysql-db:
+    image: mysql:8.0
+    container_name: om-distribution-mysql-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-om_markets}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-om_markets}
+      MYSQL_USER: ${MYSQL_USER:-mysqluser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-rootpass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
     volumes:
-      - postgres_data:/var/lib/postgresql   # pg18+ usa esta ruta (no /data)
-      # Scripts en esta carpeta se ejecutan automáticamente en el PRIMER arranque (volumen vacío)
-      - ./backend/database/docker-init:/docker-entrypoint-initdb.d:ro
+      - mysql_data:/var/lib/mysql
+      # Use a specific init folder for MySQL
+      - ./backend/database/mysql-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3306:3306"
     networks:
       - om_internal_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,10 +31,10 @@ services:
     container_name: om-distribution-backend
     restart: unless-stopped
     depends_on:
-      om-db:
+      om-mysql-db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-rootpass}@om-db:5432/${POSTGRES_DB:-om_markets}
+      DATABASE_URL: mysql://${MYSQL_USER:-mysqluser}:${MYSQL_PASSWORD:-rootpass}@om-mysql-db:3306/${MYSQL_DATABASE:-om_markets}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       FRONTEND_URL: ${FRONTEND_URL}
@@ -62,5 +66,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+
+  mysql_data:
   uploads_data:

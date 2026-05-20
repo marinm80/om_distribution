@@ -8,6 +8,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+RUN npm run build
 
 # Ensure the appgroup and appuser are created, and assign permissions for the uploads folder
 RUN mkdir -p public/uploads \
