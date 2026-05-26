@@ -45,6 +45,9 @@ jobs:
         run: npm test
         env:
           NODE_ENV: test
+          DATABASE_URL: mysql://testuser:testpass@localhost:3306/testdb
+          JWT_SECRET: ci-test-jwt-secret-key
+          JWT_REFRESH_SECRET: ci-test-jwt-refresh-secret-key
 
   # ─────────────────────────────────────────────
   # JOB 2: Lint y Build del Frontend
