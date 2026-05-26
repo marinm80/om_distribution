@@ -1,7 +1,5 @@
 FROM node:20-alpine
 
-ENV NODE_ENV=production
-
 WORKDIR /app
 
 COPY package*.json ./
@@ -9,6 +7,8 @@ RUN npm ci
 
 COPY . .
 RUN npm run build
+
+ENV NODE_ENV=production
 
 # Ensure the appgroup and appuser are created, and assign permissions for the uploads folder
 RUN mkdir -p public/uploads \
