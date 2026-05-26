@@ -11,11 +11,11 @@ class AuthService {
       throw new AppError('Invalid email or password', 401);
     }
 
-    if (!user.password_hash) {
+    if (!user.password) {
       throw new AppError('Invalid user configuration', 500);
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       throw new AppError('Invalid email or password', 401);
     }

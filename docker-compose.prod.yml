@@ -1,19 +1,17 @@
+# docker-compose.prod.yml
 services:
 
-  # 1.5 BASE DE DATOS (MySQL 8) - New DB
   om-mysql-db:
     image: mysql:8.0
-    container_name: 
-    restart: unless-stom-distribution-mysql-dbopped
+    container_name: om-distribution-mysql-db
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-om_markets}
-      MYSQL_USER: ${MYSQL_USER:-mysqluser}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-rootpass}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
-      # Use a specific init folder for MySQL
-      - ./backend/database/mysql-init:/docker-entrypoint-initdb.d:ro
     ports:
       - "3306:3306"
     networks:
@@ -24,17 +22,15 @@ services:
       timeout: 5s
       retries: 10
 
-  # 2. BACKEND (Express.js)
   om-backend:
-    build:
-      context: ./backend
+    image: ghcr.io/marinm80/om_distribution-backend:latest
     container_name: om-distribution-backend
     restart: unless-stopped
     depends_on:
       om-mysql-db:
         condition: service_healthy
     environment:
-      DATABASE_URL: mysql://${MYSQL_USER:-mysqluser}:${MYSQL_PASSWORD:-rootpass}@om-mysql-db:3306/${MYSQL_DATABASE:-om_markets}
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@om-mysql-db:3306/${MYSQL_DATABASE}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       FRONTEND_URL: ${FRONTEND_URL}
@@ -46,12 +42,8 @@ services:
       - proxy_network
       - om_internal_net
 
-  # 3. FRONTEND (React + Vite)
   om-frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: ${VITE_API_URL}
+    image: ghcr.io/marinm80/om_distribution-frontend:latest
     container_name: om-distribution-frontend
     restart: unless-stopped
     depends_on:
@@ -66,6 +58,5 @@ networks:
     driver: bridge
 
 volumes:
-
   mysql_data:
   uploads_data:
