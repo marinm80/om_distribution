@@ -1,0 +1,43 @@
+{
+  "model": "gemini-1.5-pro",
+  "agents": {
+    "overrides": {
+      "codebase_investigator": {
+        "modelConfig": { "model": "gemini-2.0-flash" }
+      },
+      "cli_help": {
+        "modelConfig": { "model": "gemini-2.0-flash" }
+      },
+      "team-manager": {
+        "modelConfig": { "model": "gemini-2.0-flash" }
+      },
+      "scope-guardian": {
+        "modelConfig": { "model": "gemini-2.0-flash" }
+      },
+      "generalist": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "code-implementer": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "code-reviewer": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "plan-builder": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "readme-curator": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "spec-definer": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "task-decomposer": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      },
+      "tech-advisor": {
+        "modelConfig": { "model": "gemini-1.5-pro" }
+      }
+    }
+  }
+}

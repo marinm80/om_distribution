@@ -65,11 +65,11 @@ const Products: React.FC = () => {
         {products.map((product) => (
           <SwiperSlide key={product.id} className="!h-auto">
             <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-100 h-full flex flex-col">
-              <div className="h-64 overflow-hidden">
+              <div className="h-64 overflow-hidden bg-gray-50 flex items-center justify-center">
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-contain p-2 transform hover:scale-110 transition-transform duration-500"
                 />
               </div>
               <div className="p-6 flex-grow flex flex-col">
