@@ -3,8 +3,8 @@ services:
   # 1.5 BASE DE DATOS (MySQL 8) - New DB
   om-mysql-db:
     image: mysql:8.0
-    container_name: 
-    restart: unless-stom-distribution-mysql-dbopped
+    container_name: om-distribution-mysql-db
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-om_markets}
       MYSQL_USER: ${MYSQL_USER:-mysqluser}
