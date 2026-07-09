@@ -43,7 +43,7 @@ services:
     volumes:
       - uploads_data:/app/public/uploads
     networks:
-      - proxy_network
+      - coolify
       - om_internal_net
 
   # 3. FRONTEND (React + Vite)
@@ -57,11 +57,9 @@ services:
     depends_on:
       - om-backend
     networks:
-      - proxy_network
+      - coolify
 
 networks:
-  proxy_network:
-    external: true
   om_internal_net:
     driver: bridge
 
