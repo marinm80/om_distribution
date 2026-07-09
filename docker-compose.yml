@@ -60,6 +60,8 @@ services:
       - coolify
 
 networks:
+  coolify:
+    external: true
   om_internal_net:
     driver: bridge
 
