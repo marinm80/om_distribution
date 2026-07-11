@@ -200,7 +200,13 @@ const ProductsPage: React.FC = () => {
       return url;
     };
 
-    const getBase64ImageFromURL = (url: string): Promise<string> => {
+    type PdfImageAsset = {
+      dataUrl: string;
+      width: number;
+      height: number;
+    };
+
+    const loadImageAssetFromURL = (url: string): Promise<PdfImageAsset> => {
       const resolved = normalizeImageUrl(url);
       const sep = resolved.includes('?') ? '&' : '?';
       const src = resolved + sep + '_t=' + Date.now();
@@ -224,7 +230,11 @@ const ProductsPage: React.FC = () => {
               ctx.fillStyle = '#FFFFFF';
               ctx.fillRect(0, 0, w, h);
               ctx.drawImage(img, 0, 0);
-              resolve(canvas.toDataURL('image/jpeg', 0.85));
+              resolve({
+                dataUrl: canvas.toDataURL('image/jpeg', 0.88),
+                width: w,
+                height: h,
+              });
             } else {
               reject(new Error('No canvas context'));
             }
@@ -242,12 +252,36 @@ const ProductsPage: React.FC = () => {
       });
     };
 
+    const getBase64ImageFromURL = async (url: string): Promise<string> => {
+      const asset = await loadImageAssetFromURL(url);
+      return asset.dataUrl;
+    };
+
+    const addContainedImage = (asset: PdfImageAsset, x: number, y: number, boxWidth: number, boxHeight: number) => {
+      const ratio = asset.width / asset.height;
+      let drawWidth = boxWidth;
+      let drawHeight = drawWidth / ratio;
+
+      if (drawHeight > boxHeight) {
+        drawHeight = boxHeight;
+        drawWidth = drawHeight * ratio;
+      }
+
+      const drawX = x + (boxWidth - drawWidth) / 2;
+      const drawY = y + (boxHeight - drawHeight) / 2;
+      doc.addImage(asset.dataUrl, 'JPEG', drawX, drawY, drawWidth, drawHeight);
+    };
+
     // Pre-load logo + all product images in parallel
-    let logoBase64: string | null = null;
+    let logoAsset: PdfImageAsset | null = null;
     try {
-      logoBase64 = await getBase64ImageFromURL('/logo.jpg');
-    } catch (e) {
-      console.warn('Could not load logo for PDF');
+      logoAsset = await loadImageAssetFromURL('/uploads/logo.jpg');
+    } catch {
+      try {
+        logoAsset = await loadImageAssetFromURL('/logo.jpg');
+      } catch (e) {
+        console.warn('Could not load logo for PDF');
+      }
     }
 
     const imageCache = new Map<string, string>();
@@ -265,28 +299,28 @@ const ProductsPage: React.FC = () => {
     doc.setFillColor(26, 26, 26);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-    if (logoBase64) {
-      doc.addImage(logoBase64, 'JPEG', (pageWidth - 80) / 2, 40, 80, 80);
+    if (logoAsset) {
+      addContainedImage(logoAsset, (pageWidth - 110) / 2, 30, 110, 82);
     }
 
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(36);
+    doc.setFontSize(30);
     doc.setFont('helvetica', 'bold');
-    doc.text('OM Distribution', pageWidth / 2, 140, { align: 'center' });
+    doc.text('OM Distribution Corporation', pageWidth / 2, 132, { align: 'center' });
 
     doc.setFontSize(16);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(200, 200, 200);
-    doc.text('Product Catalog', pageWidth / 2, 155, { align: 'center' });
+    doc.text('Product Catalog', pageWidth / 2, 148, { align: 'center' });
 
     doc.setFontSize(11);
     doc.setTextColor(150, 150, 150);
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    doc.text(today, pageWidth / 2, 170, { align: 'center' });
+    doc.text(today, pageWidth / 2, 162, { align: 'center' });
 
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
-    doc.text('Confidential — For Authorized Distributors Only', pageWidth / 2, pageHeight - 15, { align: 'center' });
+    doc.text('Confidential - For Authorized Distributors Only', pageWidth / 2, pageHeight - 15, { align: 'center' });
 
     // ── PRODUCT PAGES ──
     for (let i = 0; i < catalogProducts.length; i++) {
@@ -295,25 +329,25 @@ const ProductsPage: React.FC = () => {
 
       // Header bar
       doc.setFillColor(26, 26, 26);
-      doc.rect(0, 0, pageWidth, 28, 'F');
+      doc.rect(0, 0, pageWidth, 34, 'F');
 
       // Logo in header
-      if (logoBase64) {
-        doc.addImage(logoBase64, 'JPEG', 8, 3, 22, 22);
+      if (logoAsset) {
+        addContainedImage(logoAsset, 8, 4, 42, 24);
       }
 
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(16);
+      doc.setFontSize(15);
       doc.setFont('helvetica', 'bold');
-      doc.text('OM Distribution', 35, 18);
+      doc.text('OM Distribution Corporation', 56, 21);
 
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text(p.category_name?.toUpperCase() || 'CATALOG', pageWidth - 14, 18, { align: 'right' });
+      doc.text(p.category_name?.toUpperCase() || 'CATALOG', pageWidth - 14, 21, { align: 'right' });
 
       // Thin accent line under header
       doc.setFillColor(0, 150, 100);
-      doc.rect(0, 28, pageWidth, 1.5, 'F');
+      doc.rect(0, 34, pageWidth, 1.5, 'F');
 
       // Product Name
       doc.setTextColor(26, 26, 26);
@@ -321,9 +355,9 @@ const ProductsPage: React.FC = () => {
       doc.setFont('helvetica', 'bold');
       const name = p.name_es || p.name || 'Unnamed Product';
       const nameLines = doc.splitTextToSize(name, pageWidth - 40);
-      doc.text(nameLines, pageWidth / 2, 48, { align: 'center' });
+      doc.text(nameLines, pageWidth / 2, 55, { align: 'center' });
       
-      let nextY = 48 + (nameLines.length * 12);
+      let nextY = 55 + (nameLines.length * 12);
 
       // Product Image (uses pre-loaded cache)
       const base64 = p.image_url ? imageCache.get(p.image_url) : null;
@@ -352,7 +386,7 @@ const ProductsPage: React.FC = () => {
       doc.line(20, pageHeight - 18, pageWidth - 20, pageHeight - 18);
       doc.setFontSize(8);
       doc.setTextColor(160, 160, 160);
-      doc.text(`OM Distribution  •  Product Catalog  •  Page ${i + 1} of ${catalogProducts.length}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      doc.text(`OM Distribution - Product Catalog - Page ${i + 1} of ${catalogProducts.length}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
     }
 
     const pdfBytes = doc.output('arraybuffer');

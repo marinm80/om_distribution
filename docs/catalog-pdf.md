@@ -13,9 +13,9 @@ The file is downloaded as `OM_Catalog_YYYY-MM-DD.pdf`.
 
 ## Format
 
-- **Orientation**: Landscape A4 (297mm × 210mm)
-- **Cover page**: Logo, title, date
-- **One page per product**: Header with logo + category, product name, image (150×95mm), description, footer with page number
+- **Orientation**: Landscape A4 (297mm x 210mm)
+- **Cover page**: Backend-served logo, title, date
+- **One page per product**: Header with logo + category, product name, image (150 x 95mm), description, footer with page number
 - **Color scheme**: Dark header (`#1a1a1a`) with teal accent (`#009664`)
 
 ## Image loading
@@ -29,6 +29,8 @@ All product images are pre-fetched in parallel before building the PDF pages, wh
 | `/uploads/filename.jpg` or full URL containing `/uploads/` | `{VITE_API_URL base}/uploads/filename.jpg` |
 | `https://external-cdn.com/image.jpg` | `{VITE_API_URL}/proxy/image?url=...` (proxied server-side) |
 
+The catalog logo is loaded from `/uploads/logo.jpg` on the backend first. If that request fails, the PDF generator falls back to the frontend asset at `/logo.jpg`.
+
 ### Why `crossOrigin = 'anonymous'`
 
 jsPDF uses `canvas.toDataURL()` to convert images to Base64. This requires CORS headers on the image response. The `/uploads` route returns `Access-Control-Allow-Origin: *` for this reason.
@@ -36,5 +38,5 @@ jsPDF uses `canvas.toDataURL()` to convert images to Base64. This requires CORS 
 ## Known issues / tips
 
 - **`[Image unavailable]`**: Check the browser console for `[PDF] Image failed for...` errors with the exact URL
-- **Logo not showing**: Place `logo.jpg` in `frontend/public/`
+- **Logo not showing**: Check `backend/public/uploads/logo.jpg` for PDF export and `frontend/public/logo.jpg` for the public page
 - **Slow generation on large catalogs**: Images are fetched in parallel; performance is bounded by the slowest image or server response time

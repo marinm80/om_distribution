@@ -30,6 +30,15 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
           >
+            <motion.img
+              src="/logo.jpg"
+              alt="OM Distribution Corporation"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="mb-8 w-56 sm:w-72 rounded-lg bg-white/95 p-2 shadow-2xl shadow-black/30 ring-1 ring-white/20"
+            />
+
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
