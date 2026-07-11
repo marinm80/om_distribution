@@ -66,14 +66,14 @@ def run(
 
 def ensure_container_exists(container: str) -> None:
     result = run(
-        ["docker", "inspect", container],
+        ["docker", "container", "inspect", container],
         stdout=subprocess.DEVNULL,
         check=False,
     )
     if result.returncode != 0:
         raise CommandError(
             f"Docker container not found: {container}\n"
-            "Tip: docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}' | grep -i mysql"
+            "Tip: docker ps -a --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}' | grep -Ei 'mysql|mariadb'"
         )
 
 
