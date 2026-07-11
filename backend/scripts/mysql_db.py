@@ -19,6 +19,7 @@ from pathlib import Path
 DEFAULT_CONTAINER = "mysql-database-om"
 DEFAULT_DATABASE = "om_markets"
 DEFAULT_USER = "om_app"
+DEFAULT_HOST = "127.0.0.1"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DUMP = PROJECT_ROOT / "backend/database/mysql_backup.sql"
 DEFAULT_BACKUP_DIR = PROJECT_ROOT / "backups"
@@ -76,7 +77,7 @@ def ensure_container_exists(container: str) -> None:
         )
 
 
-def wait_for_mysql(container: str, user: str, password: str, timeout: int) -> None:
+def wait_for_mysql(container: str, host: str, user: str, password: str, timeout: int) -> None:
     print("Waiting for MySQL...")
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -89,6 +90,8 @@ def wait_for_mysql(container: str, user: str, password: str, timeout: int) -> No
                 container,
                 "mysqladmin",
                 "ping",
+                "--protocol=TCP",
+                f"-h{host}",
                 f"-u{user}",
                 "--silent",
             ],
@@ -102,7 +105,7 @@ def wait_for_mysql(container: str, user: str, password: str, timeout: int) -> No
     raise CommandError(f"MySQL did not become ready within {timeout} seconds.")
 
 
-def mysql_exec_args(container: str, user: str, database: str) -> list[str]:
+def mysql_exec_args(container: str, host: str, user: str, database: str) -> list[str]:
     return [
         "docker",
         "exec",
@@ -111,12 +114,14 @@ def mysql_exec_args(container: str, user: str, database: str) -> list[str]:
         "MYSQL_PWD",
         container,
         "mysql",
+        "--protocol=TCP",
+        f"-h{host}",
         f"-u{user}",
         database,
     ]
 
 
-def mysqldump_args(container: str, user: str, database: str) -> list[str]:
+def mysqldump_args(container: str, host: str, user: str, database: str) -> list[str]:
     return [
         "docker",
         "exec",
@@ -128,6 +133,8 @@ def mysqldump_args(container: str, user: str, database: str) -> list[str]:
         "--routines",
         "--triggers",
         "--set-gtid-purged=OFF",
+        "--protocol=TCP",
+        f"-h{host}",
         f"-u{user}",
         database,
     ]
@@ -157,7 +164,7 @@ def confirm_import(path: Path, yes: bool) -> None:
 def verify(args: argparse.Namespace) -> None:
     password = mysql_password()
     ensure_container_exists(args.container)
-    wait_for_mysql(args.container, args.user, password, args.timeout)
+    wait_for_mysql(args.container, args.host, args.user, password, args.timeout)
 
     sql = """
 SELECT DATABASE() AS database_name, USER() AS mysql_user, VERSION() AS mysql_version;
@@ -167,7 +174,7 @@ SELECT COUNT(*) AS categories FROM categories;
 SELECT COUNT(*) AS users FROM users;
 SELECT COUNT(*) AS contacts FROM contacts;
 """
-    run(mysql_exec_args(args.container, args.user, args.database) + ["-e", sql], password=password)
+    run(mysql_exec_args(args.container, args.host, args.user, args.database) + ["-e", sql], password=password)
 
 
 def import_dump(args: argparse.Namespace) -> None:
@@ -184,11 +191,11 @@ def import_dump(args: argparse.Namespace) -> None:
     print()
 
     confirm_import(dump_path, args.yes)
-    wait_for_mysql(args.container, args.user, password, args.timeout)
+    wait_for_mysql(args.container, args.host, args.user, password, args.timeout)
 
     print("Importing dump...")
     with dump_path.open("rb") as dump_file:
-        run(mysql_exec_args(args.container, args.user, args.database), password=password, stdin=dump_file)
+        run(mysql_exec_args(args.container, args.host, args.user, args.database), password=password, stdin=dump_file)
 
     print("Import completed.")
     verify(args)
@@ -197,7 +204,7 @@ def import_dump(args: argparse.Namespace) -> None:
 def backup(args: argparse.Namespace) -> None:
     password = mysql_password()
     ensure_container_exists(args.container)
-    wait_for_mysql(args.container, args.user, password, args.timeout)
+    wait_for_mysql(args.container, args.host, args.user, password, args.timeout)
 
     if args.output:
         output = Path(args.output)
@@ -209,7 +216,7 @@ def backup(args: argparse.Namespace) -> None:
 
     print(f"Creating backup: {output}")
     with output.open("wb") as backup_file:
-        run(mysqldump_args(args.container, args.user, args.database), password=password, stdout=backup_file)
+        run(mysqldump_args(args.container, args.host, args.user, args.database), password=password, stdout=backup_file)
     print(f"Backup completed: {output}")
 
 
@@ -220,6 +227,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--container", default=os.environ.get("DB_CONTAINER", DEFAULT_CONTAINER))
     parser.add_argument("--database", default=os.environ.get("DB_NAME", DEFAULT_DATABASE))
     parser.add_argument("--user", default=os.environ.get("DB_USER", DEFAULT_USER))
+    parser.add_argument("--host", default=os.environ.get("MYSQL_HOST", DEFAULT_HOST))
     parser.add_argument("--timeout", type=int, default=60)
 
     subparsers = parser.add_subparsers(dest="command", required=True)

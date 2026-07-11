@@ -16,6 +16,7 @@ Do not commit real passwords. Export them only in the server shell session:
 export DB_CONTAINER="mysql-database-om"
 export DB_NAME="om_markets"
 export DB_USER="om_app"
+export MYSQL_HOST="127.0.0.1"
 export MYSQL_PWD="your-password"
 ```
 
