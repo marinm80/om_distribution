@@ -130,6 +130,7 @@ def mysqldump_args(container: str, host: str, user: str, database: str) -> list[
         container,
         "mysqldump",
         "--single-transaction",
+        "--no-tablespaces",
         "--routines",
         "--triggers",
         "--set-gtid-purged=OFF",
