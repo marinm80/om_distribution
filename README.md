@@ -1,96 +1,75 @@
-# OM Distribution — Distribuidora de Alimentos
+# OM Distribution
 
-Este es el repositorio central de **OM Distribution**, una plataforma moderna para una distribuidora de alimentos en Estados Unidos. El proyecto sigue una arquitectura **PERN** (PostgreSQL, Express, React, Node) y está diseñado bajo estándares profesionales de escalabilidad y rendimiento.
+Plataforma bilingüe para una distribuidora de alimentos, con catálogo público y panel administrativo. El sistema usa React, Express y MySQL, y está preparado para desplegar frontend, backend y base de datos como recursos separados en Coolify.
 
-### 🚩 Estado del Proyecto: **Completado (V1.1.0)**
-- [x] Arquitectura de 4 Capas (Backend) con Patrón Repositorio.
-- [x] Base de Datos Bilingüe (PostgreSQL).
-- [x] Dashboard Administrativo robusto para gestión de contenidos.
-- [x] Sistema de Medios: Soporte para subida de imágenes locales y URLs externas.
-- [x] Generación de Catálogos PDF en formato horizontal (Landscape).
-- [x] Importación masiva de productos desde Excel.
+## Estado
 
----
+Versión funcional con:
 
-## 🚀 Stack Tecnológico
+- CRUD de productos, categorías, testimonios, contactos y usuarios.
+- Múltiples categorías por producto.
+- Importación de productos desde Excel y catálogo PDF informativo.
+- Autenticación JWT con rotación de refresh token en cookie HttpOnly.
+- Límite de intentos de inicio de sesión.
+- Interfaz bilingüe inglés/español y branding de portfolio.
 
-| Capa       | Tecnología                                    |
-|------------|-----------------------------------------------|
-| **Frontend**   | React 19, Vite 7, TailwindCSS v4              |
-| **Backend**    | Node 20, Express 4.x, Multer (Uploads)        |
-| **Base de datos** | PostgreSQL 16 (driver nativo `pg`)        |
-| **Auth**       | JWT con refresh tokens (HttpOnly Cookies)     |
-| **Reportes**   | jsPDF (Catálogos), XLSX (Excel Import)       |
-| **Animaciones** | Framer Motion 12, Swiper 12                  |
+## Stack
 
----
+| Capa | Tecnología |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite 7, Tailwind CSS 4 |
+| Backend | Node.js 20, Express 4, TypeScript |
+| Base de datos | MySQL 8 (`mysql2`) |
+| Auth | Access JWT y refresh token rotativo en cookie HttpOnly |
+| Reportes | jsPDF y XLSX |
 
-## 🛠️ Comandos Rápidos
+## Desarrollo local
 
-### Backend (`/backend`)
-```bash
-npm install      # Instalar dependencias
-npm run dev      # Inicia con nodemon (Desarrollo)
-npm run start    # Inicia en Producción
-npm run test     # Correr tests con Jest
+```powershell
+docker-compose up -d om-mysql-db
+
+cd backend
+npm install
+npm run dev
+
+cd ..\frontend
+npm install
+npm run dev
 ```
 
-### Frontend (`/frontend`)
-```bash
-npm install      # Instalar dependencias
-npm run dev      # Vite HMR (Puerto 5173)
-npm run build    # Generar bundle de producción
+Configura `backend/.env` a partir de `backend/.env.example`. El frontend usa `http://localhost:5000/api` por defecto; puede sobrescribirse con `VITE_API_URL`.
+
+## Cambios de base de datos
+
+Los cambios de esquema se guardan exclusivamente en [`backend/database/migrations`](./backend/database/migrations). Para la versión actual debe aplicarse:
+
+```text
+backend/database/migrations/004_product_categories.sql
 ```
 
----
+La migración es aditiva e idempotente: crea `product_categories` y copia las categorías existentes sin eliminar `products.category_id`.
 
-## 📂 Estructura del Proyecto
+Consulta [`docs/deploy.md`](./docs/deploy.md) para el orden exacto de backup, migración, verificación y despliegue en el VPS.
 
-```
-om_distribution/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/      # Manejo de peticiones y respuestas
-│   │   ├── repositories/     # Capa de acceso a datos (SQL)
-│   │   ├── routes/           # Endpoints de la API
-│   │   └── middlewares/      # Seguridad, Auth y Errores
-│   └── public/uploads/       # Almacenamiento local de imágenes
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/       # UI Reutilizable y Secciones
-│   │   ├── context/          # Gestión de estado (Auth, Idioma)
-│   │   ├── pages/admin/      # Panel de administración
-│   │   └── services/         # Clientes de API (Axios)
-│
-├── specs/                    # Documentación SDD
-└── docs/                     # Guía técnica y manuales
+## Verificación
+
+```powershell
+cd backend
+npm test -- --runInBand
+npm run build
+
+cd ..\frontend
+npm run lint
+npm run build
 ```
 
----
+## Documentación
 
-## 🏛️ Funcionalidades Principales
+- [Configuración local](./docs/setup.md)
+- [Release en VPS/Coolify](./docs/deploy.md)
+- [Migraciones SQL](./backend/database/migrations/README.md)
+- [Especificación de esta actualización](./specs/maintenance-feature-readiness/spec.md)
 
-### 🌍 Bilingüe Nativo (EN/ES)
-Todo el sistema está diseñado para ser bilingüe desde la base de datos hasta la interfaz de usuario, permitiendo cambiar de idioma instantáneamente.
+## Licencia
 
-### 🔐 Seguridad Avanzada
-Implementación de **JWT Rotation** con Refresh Tokens seguros en Cookies HttpOnly y limitación de peticiones (Rate Limiting) para prevenir ataques.
-
-### 📊 Gestión de Catálogo
-- **PDF Dinámico**: Generación de catálogos profesionales en horizontal con un producto por página.
-- **Subida de Archivos**: Integración con Multer para gestionar fotografías de productos localmente.
-- **Excel Bulk Import**: Permite cargar cientos de productos en segundos mediante plantillas Excel.
-
----
-
-## 📝 Documentación Adicional
-
-Para más detalles técnicos y guías de uso, consulta:
-- [Guía Técnica de OM Distribution](./docs/OM_DISTRIBUTION_GUIDE.md)
-- [Especificaciones Funcionales](./specs/landing-om-distribution/spec.md)
-
----
-
-## 📄 Licencia
-© 2026 OM Distribution. Todos los derechos reservados.
+Copyright © 2026 Rafael Marín. Todos los derechos reservados. Consulta [`LICENSE`](./LICENSE).

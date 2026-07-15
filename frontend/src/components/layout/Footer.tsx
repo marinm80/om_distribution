@@ -1,5 +1,14 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone, MapPin } from 'lucide-react';
+import { PORTFOLIO_URL } from '../../config/branding';
 
 const FacebookIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -85,6 +94,17 @@ const Footer = () => {
         <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
           <p>© {new Date().getFullYear()} OM Distribution. {t('footer.rights')}</p>
           <p className="mt-1 text-gray-600">Marcos Gomez — Founder</p>
+          <p className="mt-3 text-gray-400">
+            {t('branding.footerCredit')}{' '}
+            <a
+              href={PORTFOLIO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              {t('branding.viewPortfolio')} ↗
+            </a>
+          </p>
         </div>
       </div>
     </footer>

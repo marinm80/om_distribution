@@ -35,5 +35,11 @@
     "rights": "All rights reserved.",
     "description": "Your strategic partner in the distribution of leading brands. Serving Philadelphia, Connecticut, Massachusetts, and Rhode Island, with clients in New York.",
     "address": "Springfield, Massachusetts"
+  },
+  "branding": {
+    "demoBanner": "You are viewing a demo application by Rafael Marín.",
+    "backToPortfolio": "Back to Main Portfolio",
+    "footerCredit": "Designed & Developed by Rafael Marín —",
+    "viewPortfolio": "View Portfolio"
   }
 }

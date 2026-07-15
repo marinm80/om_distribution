@@ -1,5 +1,15 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { PORTFOLIO_URL } from '../../config/branding';
 import {
   LayoutDashboard, Package, Tags, MessageSquareQuote,
   Mail, Users, LogOut, ChevronRight
@@ -15,6 +25,7 @@ const allNavItems = [
 ];
 
 const AdminLayout = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const userRole = user?.role || 'seller';
@@ -91,6 +102,18 @@ const AdminLayout = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-64">
+        <div className="border-b border-amber-200 bg-amber-50 px-8 py-3 text-center text-sm text-amber-900">
+          <span aria-hidden="true">✨ </span>
+          {t('branding.demoBanner')}{' '}
+          <a
+            href={PORTFOLIO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold underline underline-offset-2 hover:text-amber-700"
+          >
+            {t('branding.backToPortfolio')} ↗
+          </a>
+        </div>
         <div className="p-8">
           <Outlet />
         </div>

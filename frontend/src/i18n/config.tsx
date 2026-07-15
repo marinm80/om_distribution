@@ -1,3 +1,11 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';

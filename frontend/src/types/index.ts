@@ -1,3 +1,11 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 export interface Category {
   id: number;
   name: string;
@@ -14,7 +22,9 @@ export interface Product {
   description_en?: string;
   description_es?: string;
   image_url: string;
-  category_id: number;
+  category_id: number | null;
+  category_ids: number[];
+  categories?: Category[];
   category_name?: string;
   is_active: boolean;
   show_on_landing: boolean;
@@ -36,7 +46,7 @@ export interface Testimonial {
 }
 
 export interface User {
-  id: number;
+  id: string | number;
   email: string;
   role: string;
   created_at?: string;

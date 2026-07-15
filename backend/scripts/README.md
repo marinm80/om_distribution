@@ -59,6 +59,9 @@ You can also choose the output path:
 python3 backend/scripts/mysql_db.py backup backups/manual_before_import.sql
 ```
 
-## Compatibility Wrapper
+## Supported scope
 
-The legacy root-level `scripts/migrate-to-docker.sh` calls this Python tool.
+`mysql_db.py` is the only supported database maintenance executable in this
+directory. Schema and data changes belong in numbered SQL files under
+`backend/database/migrations/`; backups and imports remain explicit operator
+actions through this tool.

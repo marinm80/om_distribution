@@ -1,0 +1,20 @@
+{
+  "slug": "maintenance-feature-readiness",
+  "title": "Maintenance and feature readiness",
+  "phase": "done",
+  "stack_hints": {
+    "frontend": "React 19, TypeScript, Vite 7, Tailwind CSS 4",
+    "backend": "Node.js, Express 4, TypeScript",
+    "database": "MySQL via mysql2; numbered SQL migrations",
+    "e2e": null,
+    "devops": "Existing Docker/Coolify deployment unchanged"
+  },
+  "approved_checkpoints": {
+    "functional_spec": true,
+    "technical_spec": true,
+    "data_model": true,
+    "architecture_plan": true
+  },
+  "current_task": null,
+  "completed_tasks": ["T-000", "T-001", "T-002", "T-003", "T-004", "T-005", "T-006", "T-007"]
+}

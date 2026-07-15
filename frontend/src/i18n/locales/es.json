@@ -35,5 +35,11 @@
     "rights": "Todos los derechos reservados.",
     "description": "Tu socio estratégico en la distribución de marcas líderes. Prestando servicios en Philadelphia, Connecticut, Massachusetts y Rhode Island, con clientes en New York.",
     "address": "Springfield, Massachusetts"
+  },
+  "branding": {
+    "demoBanner": "Estás viendo una aplicación de demostración de Rafael Marín.",
+    "backToPortfolio": "Volver al Portafolio Principal",
+    "footerCredit": "Diseñado y Desarrollado por Rafael Marín —",
+    "viewPortfolio": "Ver Portafolio"
   }
 }

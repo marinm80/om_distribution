@@ -1,8 +1,46 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAdminProducts, getAdminCategories, createProduct, updateProduct, deleteProduct, bulkImportProducts, toggleProductField, uploadImage } from '../../services/adminApi';
 import { Plus, Pencil, Trash2, X, Search, Image as ImageIcon, Download, Upload, FileSpreadsheet, Eye, EyeOff, Power } from 'lucide-react';
 import { Product, Category } from '../../types';
+
+interface ProductForm {
+  name_en: string;
+  name_es: string;
+  description_en: string;
+  description_es: string;
+  image_url: string;
+  category_ids: string[];
+  is_active: boolean;
+  show_on_landing: boolean;
+}
+
+const emptyProductForm = (categoryId?: number): ProductForm => ({
+  name_en: '',
+  name_es: '',
+  description_en: '',
+  description_es: '',
+  image_url: '',
+  category_ids: categoryId ? [String(categoryId)] : [],
+  is_active: true,
+  show_on_landing: false,
+});
+
+const parseCategoryIds = (value: unknown, legacyValue?: unknown): number[] => {
+  const source = value === undefined || value === null || value === '' ? legacyValue : value;
+  const rawValues = Array.isArray(source) ? source : String(source ?? '').split(',');
+  return Array.from(new Set(
+    rawValues.map(item => Number(String(item).trim())).filter(item => Number.isInteger(item) && item > 0)
+  ));
+};
 
 // Robust cross-browser download using data URI
 const downloadFile = (uint8Array: Uint8Array, filename: string, mimeType: string) => {
@@ -32,7 +70,7 @@ const ProductsPage: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageSource, setImageSource] = useState('url'); // 'url' or 'upload'
   const [filterCategory, setFilterCategory] = useState('all');
-  const [form, setForm] = useState({ name_en:'', name_es:'', description_en:'', description_es:'', image_url:'', category_id:'', is_active:true, show_on_landing:false });
+  const [form, setForm] = useState<ProductForm>(() => emptyProductForm());
 
   const fetchData = async () => {
     try {
@@ -48,14 +86,23 @@ const ProductsPage: React.FC = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name_en:'', name_es:'', description_en:'', description_es:'', image_url:'', category_id: categories[0]?.id.toString() || '', is_active:true, show_on_landing:false });
+    setForm(emptyProductForm(categories[0]?.id));
     setImageSource('url');
     setShowModal(true);
   };
 
   const openEdit = (p: Product) => {
     setEditing(p);
-    setForm({ name_en: p.name_en||p.name||'', name_es: p.name_es||p.name||'', description_en: p.description_en||p.description||'', description_es: p.description_es||p.description||'', image_url: p.image_url||'', category_id: p.category_id?.toString() ||'', is_active: p.is_active !== false, show_on_landing: p.show_on_landing === true });
+    setForm({
+      name_en: p.name_en || p.name || '',
+      name_es: p.name_es || p.name || '',
+      description_en: p.description_en || p.description || '',
+      description_es: p.description_es || p.description || '',
+      image_url: p.image_url || '',
+      category_ids: (p.category_ids?.length ? p.category_ids : p.category_id ? [p.category_id] : []).map(String),
+      is_active: p.is_active !== false,
+      show_on_landing: p.show_on_landing === true,
+    });
     setImageSource(p.image_url?.includes('/uploads/') ? 'upload' : 'url');
     setShowModal(true);
   };
@@ -79,15 +126,25 @@ const ProductsPage: React.FC = () => {
     if (!token) return;
     console.log('Form submission started with data:', form);
     try {
+      const categoryIds = form.category_ids.map(Number);
+      if (categoryIds.length === 0) {
+        alert('Select at least one category.');
+        return;
+      }
+      const payload = {
+        ...form,
+        category_ids: categoryIds,
+        category_id: categoryIds[0],
+      };
       if (editing) {
-        await updateProduct(editing.id, { ...form, category_id: parseInt(form.category_id) }, token);
+        await updateProduct(editing.id, payload, token);
         alert('Product updated successfully!');
       } else {
-        const res = await createProduct({ ...form, category_id: parseInt(form.category_id) }, token);
+        const res = await createProduct(payload, token);
         alert(res.data.message || 'Product created successfully!');
       }
       setShowModal(false); 
-      setForm({ name_en:'', name_es:'', description_en:'', description_es:'', image_url:'', category_id:'', is_active:true, show_on_landing:false });
+      setForm(emptyProductForm());
       await fetchData();
     } catch (err: unknown) { 
       console.error('Submit Error:', err);
@@ -116,11 +173,11 @@ const ProductsPage: React.FC = () => {
   const downloadTemplate = async () => {
     const XLSX = await import('xlsx');
     const templateData = [
-      { name_en:'Premium Rice', name_es:'Arroz Premium', description_en:'High quality long grain rice.', description_es:'Arroz de grano largo de alta calidad.', image_url:'https://example.com/rice.jpg', category_id:1, is_active:'TRUE', show_on_landing:'FALSE' },
-      { name_en:'Organic Beans', name_es:'Frijoles Orgánicos', description_en:'Farm fresh organic beans.', description_es:'Frijoles orgánicos frescos.', image_url:'https://example.com/beans.jpg', category_id:1, is_active:'TRUE', show_on_landing:'TRUE' },
+      { name_en:'Premium Rice', name_es:'Arroz Premium', description_en:'High quality long grain rice.', description_es:'Arroz de grano largo de alta calidad.', image_url:'https://example.com/rice.jpg', category_ids:'1,2', is_active:'TRUE', show_on_landing:'FALSE' },
+      { name_en:'Organic Beans', name_es:'Frijoles Orgánicos', description_en:'Farm fresh organic beans.', description_es:'Frijoles orgánicos frescos.', image_url:'https://example.com/beans.jpg', category_ids:'1', is_active:'TRUE', show_on_landing:'TRUE' },
     ];
     const ws = XLSX.utils.json_to_sheet(templateData);
-    ws['!cols'] = [{ wch:25 },{ wch:25 },{ wch:45 },{ wch:45 },{ wch:35 },{ wch:12 },{ wch:10 },{ wch:16 }];
+    ws['!cols'] = [{ wch:25 },{ wch:25 },{ wch:45 },{ wch:45 },{ wch:12 },{ wch:35 },{ wch:18 },{ wch:10 },{ wch:16 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Products');
     const catData = categories.map(c => ({ category_id: c.id, name: c.name }));
@@ -148,7 +205,9 @@ const ProductsPage: React.FC = () => {
       const prods = rows.map(r => ({
         name_en: String(r.name_en||'').trim(), name_es: String(r.name_es||'').trim(),
         description_en: String(r.description_en||'').trim(), description_es: String(r.description_es||'').trim(),
-        image_url: String(r.image_url||'').trim(), category_id: r.category_id ? Number(r.category_id) : undefined,
+        image_url: String(r.image_url||'').trim(),
+        category_ids: parseCategoryIds(r.category_ids, r.category_id),
+        category_id: parseCategoryIds(r.category_ids, r.category_id)[0],
         is_active: String(r.is_active||'true').toLowerCase() !== 'false',
         show_on_landing: String(r.show_on_landing||'false').toLowerCase() === 'true',
       }));
@@ -174,7 +233,10 @@ const ProductsPage: React.FC = () => {
     const activeProducts = products.filter(p => p.is_active !== false);
     const catalogProducts = filterCategory === 'all'
       ? activeProducts
-      : activeProducts.filter(p => String(p.category_id) === String(filterCategory));
+      : activeProducts.filter(p =>
+          (p.category_ids?.length ? p.category_ids : [p.category_id])
+            .some(id => String(id) === String(filterCategory))
+        );
 
     if (catalogProducts.length === 0) {
       alert('No products to export in this category');
@@ -343,7 +405,8 @@ const ProductsPage: React.FC = () => {
 
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text(p.category_name?.toUpperCase() || 'CATALOG', pageWidth - 14, 21, { align: 'right' });
+      const categoryLabel = p.categories?.map(category => category.name).join(' / ') || p.category_name || 'CATALOG';
+      doc.text(categoryLabel.toUpperCase(), pageWidth - 14, 21, { align: 'right' });
 
       // Thin accent line under header
       doc.setFillColor(0, 150, 100);
@@ -395,7 +458,9 @@ const ProductsPage: React.FC = () => {
 
   const filtered = products.filter(p => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
-    const matchCat = filterCategory === 'all' || String(p.category_id) === String(filterCategory);
+    const matchCat = filterCategory === 'all' ||
+      (p.category_ids?.length ? p.category_ids : [p.category_id])
+        .some(id => String(id) === String(filterCategory));
     return matchSearch && matchCat;
   });
 
@@ -438,7 +503,7 @@ const ProductsPage: React.FC = () => {
               <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">#</th>
               <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">Image</th>
               <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">Product</th>
-              <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">Category</th>
+              <th className="text-left px-4 py-3 text-xs font-bold text-gray-400 uppercase">Categories</th>
               <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase">Active</th>
               <th className="text-center px-4 py-3 text-xs font-bold text-gray-400 uppercase">Landing</th>
               <th className="text-right px-4 py-3 text-xs font-bold text-gray-400 uppercase">Actions</th>
@@ -455,7 +520,13 @@ const ProductsPage: React.FC = () => {
                   <p className="text-sm font-semibold text-gray-900">{p.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5 max-w-xs truncate">{p.description}</p>
                 </td>
-                <td className="px-4 py-3"><span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">{p.category_name || '—'}</span></td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-1">
+                    {(p.categories?.length ? p.categories : [{ id: p.category_id || 0, name: p.category_name || '—' }]).map(category => (
+                      <span key={category.id} className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">{category.name}</span>
+                    ))}
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-center">
                   <button onClick={() => handleToggle(p.id, 'is_active', p.is_active !== false)} className={`p-1.5 rounded-lg transition-colors ${p.is_active !== false ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`} title={p.is_active !== false ? 'Active – click to deactivate' : 'Inactive – click to activate'}>
                     <Power size={15} />
@@ -496,7 +567,6 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Description (EN)</label><textarea value={form.description_en} onChange={e => setForm({...form, description_en: e.target.value})} rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a] resize-none" /></div>
               <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Description (ES)</label><textarea value={form.description_es} onChange={e => setForm({...form, description_es: e.target.value})} rows={2} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a] resize-none" /></div>
-              
               <div className="space-y-3">
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer">
@@ -518,11 +588,30 @@ const ProductsPage: React.FC = () => {
                 {form.image_url && <div className="flex items-center gap-2 text-[10px] text-gray-400 overflow-hidden truncate">Current: {form.image_url}</div>}
               </div>
 
-              <div className="space-y-1"><label className="text-xs font-semibold text-gray-600">Category</label>
-                <select value={form.category_id} onChange={e => setForm({...form, category_id: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#1a1a1a]">
-                  <option value="">Select category</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-600">Categories</label>
+                <div className="grid grid-cols-2 gap-2 rounded-xl border border-gray-200 p-3 max-h-40 overflow-y-auto">
+                  {categories.map(category => {
+                    const categoryId = String(category.id);
+                    const checked = form.category_ids.includes(categoryId);
+                    return (
+                      <label key={category.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => setForm({
+                            ...form,
+                            category_ids: checked
+                              ? form.category_ids.filter(id => id !== categoryId)
+                              : [...form.category_ids, categoryId],
+                          })}
+                          className="w-4 h-4 accent-emerald-600"
+                        />
+                        <span>{category.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
               <div className="flex gap-6 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.is_active} onChange={e => setForm({...form, is_active: e.target.checked})} className="w-4 h-4 accent-green-600 rounded" /><span className="text-sm text-gray-700">Active</span></label>

@@ -1,3 +1,11 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import pool from '../config/pool';
 import { User } from '../types';
 import crypto from 'crypto';
@@ -43,6 +51,35 @@ class UserRepository {
   async deleteRefreshToken(token: string): Promise<void> {
     const query = 'DELETE FROM refresh_tokens WHERE token = ?';
     await pool.query(query, [token]);
+  }
+
+  async rotateRefreshToken(
+    oldToken: string,
+    userId: string | number,
+    newToken: string,
+    expiresAt: Date
+  ): Promise<void> {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      const [result]: any = await connection.query(
+        'DELETE FROM refresh_tokens WHERE token = ? AND user_id = ?',
+        [oldToken, userId]
+      );
+      if (result.affectedRows !== 1) {
+        throw new Error('Refresh token was already rotated or revoked');
+      }
+      await connection.query(
+        'INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+        [userId, newToken, expiresAt]
+      );
+      await connection.commit();
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 
   async deleteUserRefreshTokens(userId: string | number): Promise<void> {

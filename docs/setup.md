@@ -1,108 +1,67 @@
-# Setup
+# Configuración local
 
-## Local Development
+## Requisitos
 
-### Prerequisites
-- Node.js 20+
-- PostgreSQL 15 running on `localhost:5432`
+- Node.js 20 o superior.
+- Docker Desktop con `docker-compose.exe`, o una instancia MySQL 8 accesible.
 
-### Backend
+## Base de datos
 
-```bash
+Desde la raíz del repositorio:
+
+```powershell
+docker-compose up -d om-mysql-db
+docker-compose ps
+```
+
+El contenedor local se inicializa con el esquema y datos incluidos en el proyecto. Aplica después las migraciones numeradas que todavía no existan en esa base. Para esta actualización:
+
+```powershell
+docker cp backend/database/migrations/004_product_categories.sql om-distribution-mysql-db:/tmp/004.sql
+docker exec om-distribution-mysql-db sh -c 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /tmp/004.sql'
+```
+
+La migración puede ejecutarse nuevamente: sus cambios de esquema y backfill son idempotentes.
+
+## Backend
+
+```powershell
 cd backend
+Copy-Item .env.example .env
 npm install
-
-# Create .env (copy from .env.example and fill in)
-cp .env.example .env
+npm run dev
 ```
 
-Required `.env` variables:
-```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/om_markets
-JWT_SECRET=your_secret
-JWT_REFRESH_SECRET=your_refresh_secret
+Variables mínimas:
+
+```dotenv
 PORT=5000
-NODE_ENV=development
+DATABASE_URL=mysql://mysqluser:change_me@127.0.0.1:3306/om_markets
+JWT_SECRET=replace_with_a_long_random_value
+JWT_REFRESH_SECRET=replace_with_another_long_random_value
 FRONTEND_URL=http://localhost:5173
 ```
 
-Run DB migrations:
-```bash
-psql -U postgres -d om_markets -f database/001_initial_schema.sql
-psql -U postgres -d om_markets -f database/002_seed_data.sql
-psql -U postgres -d om_markets -f database/003_indexes.sql
-```
+## Frontend
 
-Start backend:
-```bash
-npm run dev   # nodemon
-```
-
-### Frontend
-
-```bash
+```powershell
 cd frontend
 npm install
-npm run dev   # Vite dev server at http://localhost:5173
+npm run dev
 ```
 
-`VITE_API_URL` is optional locally — defaults to `http://localhost:5000/api`.
+`VITE_API_URL` es opcional localmente y por defecto apunta a `http://localhost:5000/api`.
 
----
+## Pruebas
 
-## Production (Docker)
+Con MySQL local disponible y las variables de prueba configuradas:
 
-### Required `.env` at project root
+```powershell
+cd backend
+npm test -- --runInBand
+npm run build
 
+cd ..\frontend
+npm run lint
+npm run build
 ```
-POSTGRES_DB=om_markets
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=secure_password
-
-JWT_SECRET=your_jwt_secret
-JWT_REFRESH_SECRET=your_refresh_secret
-
-FRONTEND_URL=https://yourdomain.com
-VITE_API_URL=https://api.yourdomain.com/api
-```
-
-`VITE_API_URL` is baked into the frontend image at build time (Vite env var).
-
-### Build & run
-
-```bash
-docker compose up -d --build
-```
-
-### First run: apply migrations
-
-```bash
-docker exec -it om-distribution-backend \
-  node -e "
-    const pool = require('./src/config/pool');
-    const fs = require('fs');
-    ['001_initial_schema','002_seed_data','003_indexes'].forEach(async f => {
-      const sql = fs.readFileSync('./database/' + f + '.sql','utf8');
-      await pool.query(sql);
-      console.log(f + ' done');
-    });
-  "
-```
-
-Or connect directly with psql and run the files in `backend/database/`.
-
----
-
-## Admin Credentials (seed)
-
-Default admin from seed: `admin@omdistribution.com` — the password hash in the seed file is a placeholder. Create a real admin user via:
-
-```bash
-# From backend directory
-node -e "
-  const bcrypt = require('bcryptjs');
-  bcrypt.hash('yourpassword', 10).then(h => console.log(h));
-"
-```
-
-Then update the users table with the real hash.

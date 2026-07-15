@@ -1,5 +1,14 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import userRepository from '../repositories/user.repository';
 import AppError from '../utils/AppError';
 import { User } from '../types';
@@ -53,7 +62,7 @@ class AuthService {
     const refreshToken = jwt.sign(
       { id: user.id },
       refreshSecret,
-      { expiresIn: '7d' }
+      { expiresIn: '7d', jwtid: crypto.randomUUID() }
     );
 
     return { accessToken, refreshToken };
@@ -83,18 +92,11 @@ class AuthService {
         throw new AppError('User no longer exists', 403);
       }
 
-      const secret = process.env.JWT_SECRET;
-      if (!secret) {
-        throw new AppError('JWT secret is not defined in environment', 500);
-      }
-
-      const accessToken = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
-        secret,
-        { expiresIn: '15m' }
-      );
-
-      return { accessToken };
+      const tokens = this.generateTokens(user);
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      await userRepository.rotateRefreshToken(token, user.id, tokens.refreshToken, expiresAt);
+      return tokens;
     } catch (err) {
       throw new AppError('Invalid refresh token', 403);
     }

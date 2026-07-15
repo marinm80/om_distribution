@@ -1,3 +1,11 @@
+/**
+ * ====================================================================
+ * PROYECTO: OM Distribution: Plataforma Web para Distribuidora de Alimentos (React + Node/Express + MySQL)
+ * AUTOR: Rafael Marín
+ * PORTFOLIO: https://github.com/marinm80
+ * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
+ * ====================================================================
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
@@ -103,7 +111,7 @@ const Products: React.FC = () => {
               </div>
               <div className="p-6 flex-grow flex flex-col">
                 <span className="text-xs font-bold text-primary uppercase tracking-wider mb-2">
-                  {product.category_name}
+                  {product.categories?.map(category => category.name).join(' / ') || product.category_name}
                 </span>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{product.name}</h3>
                 <p className="text-gray-600 text-sm leading-relaxed flex-grow line-clamp-3">
@@ -158,7 +166,7 @@ const Products: React.FC = () => {
               {/* Details */}
               <div className="md:w-1/2 p-8 flex flex-col justify-center">
                 <span className="inline-block text-xs font-bold text-primary uppercase tracking-wider mb-3 bg-primary/10 px-3 py-1 rounded-full w-fit">
-                  {selectedProduct.category_name}
+                  {selectedProduct.categories?.map(category => category.name).join(' / ') || selectedProduct.category_name}
                 </span>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
                   {selectedProduct.name}

@@ -1,119 +1,110 @@
-# Deploy Guide — VPS
+# Release en VPS con Coolify
 
-## Arquitectura en el VPS
+Este procedimiento actualiza los recursos existentes de OM Distribution. No crea un stack Compose nuevo ni reemplaza la configuración de Coolify.
 
-```
-Nginx Proxy Manager
-    ├── om-frontend  (React, puerto 80 interno)
-    └── om-backend   (Express, puerto 5000 interno)
-            └── om-db  (PostgreSQL 18, red interna — NO expuesto)
-```
+## Orden del release
 
-Todos los servicios corren en `docker compose` dentro del mismo proyecto.
-El contendor de base de datos compartida anterior (psql/mariadb/mongo) se elimina después de la migración.
+1. Confirmar el contenedor MySQL y crear un backup.
+2. Aplicar `004_product_categories.sql`.
+3. Verificar esquema y backfill.
+4. Desplegar el backend.
+5. Desplegar el frontend.
+6. Ejecutar comprobaciones funcionales.
 
----
+La base de datos debe migrarse antes que el código porque el backend nuevo consulta `product_categories`.
 
-## Primera vez (migración desde contenedor compartido)
+## 1. Preparar variables en el VPS
 
-La base de datos actual está incluida en `backend/database/docker-init/01_dump.sql`.
-PostgreSQL la carga **automáticamente** al arrancar con un volumen vacío — no hace falta importar nada a mano.
-
-### 1. Configurar el entorno en el VPS
+Identifica el nombre real del contenedor en Coolify:
 
 ```bash
-git clone <repo-url>   # o git pull si ya existe
-cd om_distribution
-
-cp .env.example .env
-nano .env              # completar todas las variables
+docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}' | grep -Ei 'mysql|mariadb'
 ```
 
-Variables obligatorias en `.env`:
-```
-POSTGRES_PASSWORD=...   # password seguro
-JWT_SECRET=...          # openssl rand -hex 64
-JWT_REFRESH_SECRET=...  # openssl rand -hex 64
-FRONTEND_URL=https://yourdomain.com
-VITE_API_URL=https://api.yourdomain.com/api
-```
-
-### 2. Levantar el stack
+El helper admite nombres personalizados. No guardes contraseñas en el repositorio:
 
 ```bash
-docker compose up -d --build
+export DB_CONTAINER='<contenedor-mysql>'
+export DB_NAME='<base-de-datos>'
+export DB_USER='<usuario-mysql>'
+export MYSQL_PWD='<password-mysql>'
 ```
 
-Al ser el primer arranque con volumen vacío, PostgreSQL ejecuta automáticamente `01_dump.sql` y carga el schema + todos los datos actuales.
+## 2. Backup obligatorio
 
-### 3. Verificar
+Desde el checkout del proyecto en el VPS:
 
 ```bash
-docker compose ps                                  # todos en "running"
-docker compose logs om-backend --tail=20
-curl https://api.yourdomain.com/api/health         # { success: true, db: "connected" }
+python3 backend/scripts/mysql_db.py backup
 ```
 
-### 4. Copiar las imágenes de productos al volumen
+Conserva la ruta indicada por el comando y comprueba que el archivo no esté vacío antes de continuar.
+
+## 3. Aplicar la migración 004
+
+El archivo exacto para producción es:
+
+```text
+backend/database/migrations/004_product_categories.sql
+```
+
+Ejecuta el SQL mediante el helper, que pasa la contraseña al contenedor por variable de entorno:
 
 ```bash
-docker compose cp backend/public/uploads/. om-distribution-backend:/app/public/uploads/
+python3 backend/scripts/mysql_db.py import backend/database/migrations/004_product_categories.sql --yes
 ```
 
-### 5. Eliminar el contenedor viejo
+Este archivo no contiene `DROP TABLE` ni elimina `products.category_id`. Es idempotente y puede volver a ejecutarse si el comando se interrumpe.
 
-Solo cuando hayas confirmado que todo funciona:
-```bash
-docker stop <nombre-contenedor-viejo>
-docker rm <nombre-contenedor-viejo>
-# docker volume rm <nombre-volumen-viejo>   # si tenía volumen exclusivo
-```
+## 4. Verificar la migración
 
----
+La propia migración imprime tres resultados. Deben cumplirse estas condiciones:
 
-## Deploys posteriores (ya migrado)
+- `relation_count` es mayor o igual al número de productos con categoría.
+- `missing_backfills` es `0`.
+
+Además, verifica la conexión y los conteos básicos:
 
 ```bash
-cd om_distribution
-git pull origin main
-docker compose up -d --build
+python3 backend/scripts/mysql_db.py verify
 ```
 
-Solo el servicio cuya imagen cambió se reconstruye. La DB y el volumen de uploads persisten.
+## 5. Desplegar en Coolify
 
----
+Cuando la migración esté verificada:
 
-## Inicializar imágenes de productos
+1. Redeploy del recurso backend y espera a que `/api/health` responda correctamente.
+2. Redeploy del recurso frontend con `VITE_API_URL` apuntando a la API pública.
+3. No cambies los volúmenes de uploads ni la base de datos durante este release.
 
-En el primer deploy, las imágenes del repo se copian al volumen de uploads:
+Variables críticas del backend:
 
-```bash
-docker compose cp backend/public/uploads/. om-distribution-backend:/app/public/uploads/
+```dotenv
+DATABASE_URL=mysql://USER:PASSWORD@MYSQL_HOST:3306/DB_NAME
+JWT_SECRET=<valor-largo-y-aleatorio>
+JWT_REFRESH_SECRET=<otro-valor-largo-y-aleatorio>
+FRONTEND_URL=https://<dominio-frontend>
+NODE_ENV=production
 ```
 
----
+## 6. Smoke test
+
+- Abrir el catálogo público y comprobar productos y categorías.
+- Iniciar sesión en `/admin`.
+- Crear o editar un producto con dos categorías.
+- Confirmar que ambas categorías aparecen en el panel y el catálogo público.
+- Confirmar que el catálogo y el PDF son informativos y no muestran precios.
+- Cerrar sesión y volver a iniciar sesión.
+- Confirmar que el footer y el banner del panel abren `https://rafaelmarin.dev` en otra pestaña.
 
 ## Rollback
 
-```bash
-git checkout <commit-anterior>
-docker compose up -d --build
+La opción segura es desplegar el commit anterior y conservar las columnas/tablas nuevas; el código anterior seguirá usando `products.category_id`.
+
+Solo si es imprescindible revertir también el esquema, y después de restaurar o validar el backup:
+
+```sql
+DROP TABLE product_categories;
 ```
 
----
-
-## Comandos útiles
-
-```bash
-# Logs en tiempo real
-docker compose logs -f
-
-# Entrar a la DB
-docker exec -it om-distribution-db psql -U postgres -d om_markets
-
-# Hacer un backup de la DB
-docker exec om-distribution-db pg_dump -U postgres om_markets > backup_$(date +%Y%m%d).sql
-
-# Reiniciar solo el backend
-docker compose restart om-backend
-```
+No ejecutes ese rollback mientras el backend nuevo esté activo.
