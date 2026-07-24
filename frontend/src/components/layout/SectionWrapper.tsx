@@ -7,7 +7,7 @@
  * ====================================================================
  */
 import React, { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface SectionWrapperProps {
   children: ReactNode;
@@ -16,13 +16,15 @@ interface SectionWrapperProps {
 }
 
 const SectionWrapper: React.FC<SectionWrapperProps> = ({ children, id, className = "" }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <section id={id} className={`py-20 lg:py-32 overflow-hidden ${className}`}>
+    <section id={id} className={`scroll-mt-20 py-20 lg:py-32 overflow-hidden ${className}`}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         {children}

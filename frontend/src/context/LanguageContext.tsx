@@ -26,7 +26,13 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   useEffect(() => {
-    const handleLangChange = (lang: string) => setLanguage(lang);
+    const handleLangChange = (lang: string) => {
+      const normalizedLanguage = lang.split('-')[0];
+      setLanguage(normalizedLanguage);
+      document.documentElement.lang = normalizedLanguage;
+    };
+
+    handleLangChange(i18n.language || 'es');
     i18n.on('languageChanged', handleLangChange);
     return () => i18n.off('languageChanged', handleLangChange);
   }, []);

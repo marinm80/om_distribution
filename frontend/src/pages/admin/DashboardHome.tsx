@@ -9,14 +9,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getDashboardStats } from '../../services/adminApi';
-import { Package, Tags, MessageSquareQuote, Mail, TrendingUp, Clock } from 'lucide-react';
+import { Package, Tags, Mail, TrendingUp, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ContactLead } from '../../types';
 
 interface Stats {
   totalProducts: number;
   totalCategories: number;
-  totalTestimonials: number;
   totalContacts: number;
 }
 
@@ -78,10 +77,9 @@ const DashboardHome: React.FC = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard icon={Package} label="Total Products" value={stats?.totalProducts} color="text-blue-600" bgColor="bg-blue-50" />
         <StatCard icon={Tags} label="Categories" value={stats?.totalCategories} color="text-purple-600" bgColor="bg-purple-50" />
-        <StatCard icon={MessageSquareQuote} label="Testimonials" value={stats?.totalTestimonials} color="text-amber-600" bgColor="bg-amber-50" />
         <StatCard icon={Mail} label="Contact Leads" value={stats?.totalContacts} color="text-emerald-600" bgColor="bg-emerald-50" />
       </div>
 

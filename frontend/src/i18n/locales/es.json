@@ -2,14 +2,29 @@
   "nav": {
     "home": "Inicio",
     "products": "Productos",
-    "testimonials": "Testimonios",
+    "process": "Cómo funciona",
     "contact": "Contacto",
-    "about": "Nosotros"
+    "about": "Nosotros",
+    "openMenu": "Abrir menú de navegación",
+    "closeMenu": "Cerrar menú de navegación",
+    "switchLanguage": "Cambiar idioma a inglés"
   },
   "hero": {
     "title": "Tu Socio Estratégico en Distribución de Marcas Líderes",
     "subtitle": "Conectamos marcas de clase mundial con tu comunidad. Portafolio curado, logística confiable, crecimiento compartido — sirviendo a Philadelphia, CT, MA, RI y NY.",
-    "cta": "Ver Productos"
+    "cta": "Ver Productos",
+    "regionLabel": "Springfield, MA — Noreste",
+    "imageAlt": "Centro de distribución con estanterías de mercancía",
+    "features": {
+      "productsTitle": "Productos premium",
+      "productsDescription": "Ferrero, Kinder, Nutella, Don Julio y más",
+      "deliveryTitle": "A tiempo",
+      "deliverySubtitle": "Logística confiable",
+      "deliveryDescription": "Entrega rápida desde nuestro centro de distribución en Springfield",
+      "coverageTitle": "Región noreste",
+      "coverageSubtitle": "Amplia cobertura",
+      "coverageDescription": "Prestando servicios en Philadelphia, CT, MA, RI y NY"
+    }
   },
   "about": {
     "heading": "Más Que un Distribuidor — Somos Tu Aliado para el Éxito",
@@ -29,12 +44,67 @@
     "company": "Nombre de la Empresa",
     "message": "Mensaje",
     "send": "Enviar Mensaje",
-    "success": "¡Mensaje enviado con éxito!"
+    "sending": "Enviando...",
+    "success": "¡Mensaje enviado con éxito!",
+    "successFollowUp": "Recibimos tu mensaje y nos comunicaremos contigo pronto.",
+    "errorTitle": "No pudimos enviar el mensaje.",
+    "errorDescription": "Tus datos siguen aquí para que puedas intentar de nuevo. También puedes llamarnos al",
+    "proofProducts": "Más de 130 productos de marcas premium",
+    "proofCoverage": "Logística confiable — Philadelphia, CT, MA, RI y NY",
+    "namePlaceholder": "Nombre y apellido",
+    "emailPlaceholder": "nombre@empresa.com",
+    "phonePlaceholder": "+1 (555) 000-0000",
+    "companyPlaceholder": "Nombre del negocio",
+    "messagePlaceholder": "Cuéntanos qué productos o servicio necesita tu negocio..."
   },
   "footer": {
     "rights": "Todos los derechos reservados.",
     "description": "Tu socio estratégico en la distribución de marcas líderes. Prestando servicios en Philadelphia, Connecticut, Massachusetts y Rhode Island, con clientes en New York.",
-    "address": "Springfield, Massachusetts"
+    "address": "Springfield, Massachusetts",
+    "quickLinks": "Enlaces rápidos",
+    "founder": "Marcos Gomez — Fundador"
+  },
+  "products": {
+    "loading": "Cargando productos",
+    "errorTitle": "El catálogo no está disponible en este momento",
+    "errorDescription": "Puedes intentar cargarlo de nuevo o contactarnos para consultar la disponibilidad de productos.",
+    "emptyTitle": "Estamos actualizando el catálogo",
+    "emptyDescription": "Contáctanos para conocer los productos disponibles y coordinar tu pedido.",
+    "retry": "Intentar de nuevo",
+    "contact": "Consultar productos",
+    "viewDetails": "Ver detalles",
+    "openDetails": "Ver detalles de {{name}}",
+    "closeDetails": "Cerrar detalles del producto",
+    "requestInformation": "Consultar este producto"
+  },
+  "process": {
+    "title": "Desde la revisión del stand hasta la reposición",
+    "subtitle": "OM Distribution visita tu negocio, identifica lo que necesita el stand, prepara y entrega el pedido, y luego organiza y repone los productos.",
+    "ctaTitle": "¿Listo para revisar tu stand?",
+    "ctaDescription": "Cuéntanos qué necesita tu automercado, mini market o bodega y coordinamos el próximo paso.",
+    "ctaAction": "Solicitar una visita",
+    "steps": {
+      "1": {
+        "title": "Revisamos el stand",
+        "description": "Evaluamos los productos, su condición y la disponibilidad necesaria en tu negocio.",
+        "alt": "Representante de OM revisando la disponibilidad de productos en un mini market"
+      },
+      "2": {
+        "title": "Preparamos el pedido",
+        "description": "Organizamos la mercancía solicitada según las necesidades identificadas en el lugar.",
+        "alt": "Cajas de mercancía preparadas dentro del vehículo de entrega de OM"
+      },
+      "3": {
+        "title": "Entregamos la mercancía",
+        "description": "Nuestro camión lleva el pedido confirmado directamente a tu negocio.",
+        "alt": "Mercancía de OM entregada en carretilla dentro de un automercado"
+      },
+      "4": {
+        "title": "Organizamos y reponemos",
+        "description": "Organizamos el stand, reemplazamos productos viejos o vencidos y reponemos inventario para mantener la disponibilidad.",
+        "alt": "Trabajador organizando y reponiendo un stand de mini market"
+      }
+    }
   },
   "branding": {
     "demoBanner": "Estás viendo una aplicación de demostración de Rafael Marín.",

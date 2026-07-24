@@ -15,13 +15,6 @@ INSERT INTO products (name_en, name_es, description_en, description_es, image_ur
 ('Fresh Tomatoes', 'Tomates Frescos', 'Vine-ripened red tomatoes.', 'Tomates rojos madurados en rama.', 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=600', 3)
 ON CONFLICT DO NOTHING;
 
--- Seed de Testimonios
-INSERT INTO testimonials (author_name, content_en, content_es, rating, role_en, role_es, image_url) VALUES 
-('John Smith', 'The best food distributor in the region. Always on time!', 'El mejor distribuidor de alimentos de la región. ¡Siempre a tiempo!', 5, 'Restaurant Owner', 'Dueño de Restaurante', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150'),
-('Maria Garcia', 'Fresh products and excellent customer service.', 'Productos frescos y excelente servicio al cliente.', 5, 'Grocery Store Manager', 'Gerente de Supermercado', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150'),
-('David Wilson', 'Competitive pricing and USDA compliant products.', 'Precios competitivos y productos que cumplen con la USDA.', 4, 'Hotel Chef', 'Chef de Hotel', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150')
-ON CONFLICT DO NOTHING;
-
 -- Seed de Usuario Admin (Password: admin123 - Hasheado con bcrypt salt 10)
 -- $2a$10$7/zM.iL7X.Q9h0Y.8.7.6.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t.u.v.w.x.y.z (placeholder hash real)
 -- Usaremos un hash real generado por bcrypt: $2a$10$vI8A7vGzE/8E/3S5E9B4E.5Xv5Xv5Xv5Xv5Xv5Xv5Xv5Xv5Xv5Xv

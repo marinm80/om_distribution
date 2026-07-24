@@ -18,10 +18,9 @@ router.use(protect, restrictTo('admin', 'seller'));
 // Dashboard stats
 router.get('/stats', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const [[products], [categories], [testimonials], [contacts]] = await Promise.all([
+    const [[products], [categories], [contacts]] = await Promise.all([
       pool.query('SELECT COUNT(*) as count FROM products'),
       pool.query('SELECT COUNT(*) as count FROM categories'),
-      pool.query('SELECT COUNT(*) as count FROM testimonials'),
       pool.query('SELECT COUNT(*) as count FROM contacts'),
     ]) as any;
 
@@ -45,7 +44,6 @@ router.get('/stats', async (req: Request, res: Response, next: NextFunction) => 
         stats: {
           totalProducts: parseInt(products[0].count),
           totalCategories: parseInt(categories[0].count),
-          totalTestimonials: parseInt(testimonials[0].count),
           totalContacts: parseInt(contacts[0].count),
         },
         recentContacts: recentContacts,

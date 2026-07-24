@@ -1,0 +1,27 @@
+{
+  "slug": "replace-testimonials",
+  "title": "Replace fake testimonials with an honest process section",
+  "phase": "done",
+  "stack_hints": {
+    "frontend": "React 19, TypeScript, Tailwind CSS 4, Framer Motion, i18next",
+    "backend": "Express 4, TypeScript",
+    "database": "MySQL 8; destructive testimonial-table removal approved 2026-07-24",
+    "e2e": "Focused browser smoke test after implementation",
+    "devops": "No deployment architecture changes"
+  },
+  "approved_checkpoints": {
+    "functional_spec": true,
+    "technical_spec": true,
+    "data_model": true,
+    "architecture_plan": true
+  },
+  "current_task": null,
+  "completed_tasks": [
+    "T-001",
+    "T-002",
+    "T-003",
+    "T-004",
+    "T-005",
+    "T-006"
+  ]
+}

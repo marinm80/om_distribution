@@ -210,49 +210,6 @@ ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
 
 
 --
--- Name: testimonials; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.testimonials (
-    id integer NOT NULL,
-    author_name character varying(100) NOT NULL,
-    content_en text NOT NULL,
-    content_es text NOT NULL,
-    rating integer,
-    role_en character varying(100),
-    role_es character varying(100),
-    image_url text,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT testimonials_rating_check CHECK (((rating >= 1) AND (rating <= 5)))
-);
-
-
-ALTER TABLE public.testimonials OWNER TO postgres;
-
---
--- Name: testimonials_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.testimonials_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.testimonials_id_seq OWNER TO postgres;
-
---
--- Name: testimonials_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.testimonials_id_seq OWNED BY public.testimonials.id;
-
-
---
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -294,13 +251,6 @@ ALTER TABLE ONLY public.products ALTER COLUMN id SET DEFAULT nextval('public.pro
 --
 
 ALTER TABLE ONLY public.refresh_tokens ALTER COLUMN id SET DEFAULT nextval('public.refresh_tokens_id_seq'::regclass);
-
-
---
--- Name: testimonials id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.testimonials ALTER COLUMN id SET DEFAULT nextval('public.testimonials_id_seq'::regclass);
 
 
 --
@@ -752,17 +702,6 @@ COPY public.refresh_tokens (id, token, user_id, expires_at, created_at) FROM std
 
 
 --
--- Data for Name: testimonials; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.testimonials (id, author_name, content_en, content_es, rating, role_en, role_es, image_url, created_at, updated_at) FROM stdin;
-1	John Smith	The best food distributor in the region. Always on time!	El mejor distribuidor de alimentos de la regi??n. ??Siempre a tiempo!	5	Restaurant Owner	Due??o de Restaurante	https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150	2026-05-12 13:39:28.455395+00	2026-05-12 13:39:28.455395+00
-2	Maria Garcia	Fresh products and excellent customer service.	Productos frescos y excelente servicio al cliente.	5	Grocery Store Manager	Gerente de Supermercado	https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150	2026-05-12 13:39:28.455395+00	2026-05-12 13:39:28.455395+00
-3	David Wilson	Competitive pricing and USDA compliant products.	Precios competitivos y productos que cumplen con la USDA.	4	Hotel Chef	Chef de Hotel	https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150	2026-05-12 13:39:28.455395+00	2026-05-12 13:39:28.455395+00
-\.
-
-
---
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -801,13 +740,6 @@ SELECT pg_catalog.setval('public.refresh_tokens_id_seq', 11, true);
 
 
 --
--- Name: testimonials_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.testimonials_id_seq', 3, true);
-
-
---
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -840,14 +772,6 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: testimonials testimonials_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.testimonials
-    ADD CONSTRAINT testimonials_pkey PRIMARY KEY (id);
-
-
---
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -875,13 +799,6 @@ CREATE TRIGGER update_categories_modtime BEFORE UPDATE ON public.categories FOR 
 --
 
 CREATE TRIGGER update_products_modtime BEFORE UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: testimonials update_testimonials_modtime; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER update_testimonials_modtime BEFORE UPDATE ON public.testimonials FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --

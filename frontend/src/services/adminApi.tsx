@@ -7,7 +7,7 @@
  * ====================================================================
  */
 import api from './api';
-import { Product, Testimonial, User, Category } from '../types';
+import { Product, User, Category } from '../types';
 
 // Auth
 export const login = (email: string, password: string) => api.post('/auth/login', { email, password });
@@ -60,16 +60,6 @@ export const updateCategory = (id: string | number, data: Partial<Category>, tok
 
 export const deleteCategory = (id: string | number, token: string) =>
   api.delete(`/categories/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-
-// Testimonials (Admin)
-export const getAdminTestimonials = (token: string) =>
-  api.get('/testimonials?lang=es', { headers: { Authorization: `Bearer ${token}` } });
-
-export const createTestimonial = (data: Partial<Testimonial>, token: string) =>
-  api.post('/testimonials', data, { headers: { Authorization: `Bearer ${token}` } });
-
-export const deleteTestimonial = (id: string | number, token: string) =>
-  api.delete(`/testimonials/${id}`, { headers: { Authorization: `Bearer ${token}` } });
 
 // Contacts (Admin)
 export const getAdminContacts = (token: string) =>

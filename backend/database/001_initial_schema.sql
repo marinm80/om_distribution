@@ -57,23 +57,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE TRIGGER update_products_modtime BEFORE UPDATE ON products FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 
--- 5. Tabla de Testimonios
-CREATE TABLE IF NOT EXISTS testimonials (
-    id SERIAL PRIMARY KEY,
-    author_name VARCHAR(100) NOT NULL,
-    content_en TEXT NOT NULL,
-    content_es TEXT NOT NULL,
-    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-    role_en VARCHAR(100),
-    role_es VARCHAR(100),
-    image_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TRIGGER update_testimonials_modtime BEFORE UPDATE ON testimonials FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
-
--- 6. Tabla de Contactos (Leads)
+-- 5. Tabla de Contactos (Leads)
 CREATE TABLE IF NOT EXISTS contacts (
     id SERIAL PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,

@@ -6,7 +6,7 @@
  * DESCRIPCIÓN: Desarrollado como proyecto práctico de nivel profesional.
  * ====================================================================
  */
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -16,7 +16,7 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Hero from './components/sections/Hero';
 import Products from './components/sections/Products';
-import Testimonials from './components/sections/Testimonials';
+import Process from './components/sections/Process';
 import Contact from './components/sections/Contact';
 
 // Admin Pages (lazy-loaded: keeps jsPDF/xlsx out of the landing page bundle)
@@ -25,7 +25,6 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const DashboardHome = lazy(() => import('./pages/admin/DashboardHome'));
 const ProductsPage = lazy(() => import('./pages/admin/ProductsPage'));
 const CategoriesPage = lazy(() => import('./pages/admin/CategoriesPage'));
-const TestimonialsPage = lazy(() => import('./pages/admin/TestimonialsPage'));
 const ContactsPage = lazy(() => import('./pages/admin/ContactsPage'));
 const UsersPage = lazy(() => import('./pages/admin/UsersPage'));
 
@@ -51,20 +50,39 @@ const AdminOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 // Landing Page
-const LandingPage = () => (
-  <LanguageProvider>
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        <Hero />
-        <Products />
-        <Testimonials />
-        <Contact />
-      </main>
-      <Footer />
-    </div>
-  </LanguageProvider>
-);
+const LandingPage = () => {
+  useEffect(() => {
+    if (!window.location.hash) return;
+
+    const scrollToHash = () => {
+      const target = document.querySelector(window.location.hash);
+      target?.scrollIntoView({ block: 'start' });
+    };
+
+    const firstPass = window.setTimeout(scrollToHash, 0);
+    const settledPass = window.setTimeout(scrollToHash, 800);
+
+    return () => {
+      window.clearTimeout(firstPass);
+      window.clearTimeout(settledPass);
+    };
+  }, []);
+
+  return (
+    <LanguageProvider>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow">
+          <Hero />
+          <Products />
+          <Process />
+          <Contact />
+        </main>
+        <Footer />
+      </div>
+    </LanguageProvider>
+  );
+};
 
 function App() {
   return (
@@ -87,7 +105,6 @@ function App() {
               <Route index element={<DashboardHome />} />
               <Route path="products" element={<ProductsPage />} />
               <Route path="categories" element={<CategoriesPage />} />
-              <Route path="testimonials" element={<AdminOnly><TestimonialsPage /></AdminOnly>} />
               <Route path="contacts" element={<AdminOnly><ContactsPage /></AdminOnly>} />
               <Route path="users" element={<AdminOnly><UsersPage /></AdminOnly>} />
             </Route>

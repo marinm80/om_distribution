@@ -16,6 +16,13 @@ describe('OM Distribution API Integration Tests', () => {
     });
   });
 
+  describe('Removed testimonial API', () => {
+    it('should not expose the retired testimonial endpoint', async () => {
+      const res = await request(app).get('/api/testimonials');
+      expect(res.statusCode).toEqual(404);
+    });
+  });
+
   describe('Products API', () => {
     it('should return products list with correct shape', async () => {
       const res = await request(app).get('/api/products');

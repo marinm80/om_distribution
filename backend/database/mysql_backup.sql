@@ -136,39 +136,6 @@ INSERT INTO `refresh_tokens` VALUES (1,'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ
 UNLOCK TABLES;
 
 --
--- Table structure for table `testimonials`
---
-
-DROP TABLE IF EXISTS `testimonials`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `testimonials` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `author_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content_en` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content_es` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `rating` int DEFAULT NULL,
-  `role_en` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `role_es` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `image_url` text COLLATE utf8mb4_unicode_ci,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `testimonials_rating_check` CHECK (((`rating` >= 1) and (`rating` <= 5)))
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `testimonials`
---
-
-LOCK TABLES `testimonials` WRITE;
-/*!40000 ALTER TABLE `testimonials` DISABLE KEYS */;
-INSERT INTO `testimonials` VALUES (1,'John Smith','The best food distributor in the region. Always on time!','El mejor distribuidor de alimentos de la regi??n. ??Siempre a tiempo!',5,'Restaurant Owner','Due??o de Restaurante','https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150','2026-05-12 13:39:28','2026-05-12 13:39:28'),(2,'Maria Garcia','Fresh products and excellent customer service.','Productos frescos y excelente servicio al cliente.',5,'Grocery Store Manager','Gerente de Supermercado','https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150','2026-05-12 13:39:28','2026-05-12 13:39:28'),(3,'David Wilson','Competitive pricing and USDA compliant products.','Precios competitivos y productos que cumplen con la USDA.',4,'Hotel Chef','Chef de Hotel','https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150','2026-05-12 13:39:28','2026-05-12 13:39:28');
-/*!40000 ALTER TABLE `testimonials` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `users`
 --
 

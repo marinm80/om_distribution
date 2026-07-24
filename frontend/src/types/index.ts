@@ -31,20 +31,6 @@ export interface Product {
   created_at?: string;
 }
 
-export interface Testimonial {
-  id: number;
-  author_name: string;
-  content: string;
-  content_en?: string;
-  content_es?: string;
-  role: string;
-  role_en?: string;
-  role_es?: string;
-  rating: number;
-  image_url: string;
-  created_at?: string;
-}
-
 export interface User {
   id: string | number;
   email: string;

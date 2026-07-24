@@ -18,7 +18,6 @@ import pool from './config/pool';
 // Rutas
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
-import testimonialRoutes from './routes/testimonial.routes';
 import contactRoutes from './routes/contact.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import categoryRoutes from './routes/category.routes';
@@ -54,7 +53,6 @@ app.use('/uploads', (req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/categories', categoryRoutes);

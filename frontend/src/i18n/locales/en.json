@@ -2,14 +2,29 @@
   "nav": {
     "home": "Home",
     "products": "Products",
-    "testimonials": "Testimonials",
+    "process": "How it works",
     "contact": "Contact",
-    "about": "About"
+    "about": "About",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "switchLanguage": "Switch language to Spanish"
   },
   "hero": {
     "title": "Your Strategic Partner in Leading Brand Distribution",
     "subtitle": "Connecting world-class brands with your community. Curated portfolio, reliable logistics, shared growth — serving Philadelphia, CT, MA, RI, and NY.",
-    "cta": "See Products"
+    "cta": "See Products",
+    "regionLabel": "Springfield, MA — Northeast",
+    "imageAlt": "Distribution center with merchandise shelving",
+    "features": {
+      "productsTitle": "Premium products",
+      "productsDescription": "Ferrero, Kinder, Nutella, Don Julio, and more",
+      "deliveryTitle": "On time",
+      "deliverySubtitle": "Reliable logistics",
+      "deliveryDescription": "Fast delivery from our Springfield distribution hub",
+      "coverageTitle": "Northeast region",
+      "coverageSubtitle": "Wide coverage",
+      "coverageDescription": "Serving Philadelphia, CT, MA, RI, and NY"
+    }
   },
   "about": {
     "heading": "More Than a Distributor — We Are Your Ally for Success",
@@ -29,12 +44,67 @@
     "company": "Company Name",
     "message": "Message",
     "send": "Send Message",
-    "success": "Message sent successfully!"
+    "sending": "Sending...",
+    "success": "Message sent successfully!",
+    "successFollowUp": "We received your message and will reach out shortly.",
+    "errorTitle": "We couldn't send your message.",
+    "errorDescription": "Your details are still here so you can try again. You can also call us at",
+    "proofProducts": "130+ premium brand products",
+    "proofCoverage": "Reliable logistics — Philadelphia, CT, MA, RI & NY",
+    "namePlaceholder": "First and last name",
+    "emailPlaceholder": "name@company.com",
+    "phonePlaceholder": "+1 (555) 000-0000",
+    "companyPlaceholder": "Business name",
+    "messagePlaceholder": "Tell us which products or service your business needs..."
   },
   "footer": {
     "rights": "All rights reserved.",
     "description": "Your strategic partner in the distribution of leading brands. Serving Philadelphia, Connecticut, Massachusetts, and Rhode Island, with clients in New York.",
-    "address": "Springfield, Massachusetts"
+    "address": "Springfield, Massachusetts",
+    "quickLinks": "Quick links",
+    "founder": "Marcos Gomez — Founder"
+  },
+  "products": {
+    "loading": "Loading products",
+    "errorTitle": "The catalog is temporarily unavailable",
+    "errorDescription": "You can try loading it again or contact us to ask about product availability.",
+    "emptyTitle": "We're updating the catalog",
+    "emptyDescription": "Contact us to learn which products are available and coordinate your order.",
+    "retry": "Try again",
+    "contact": "Ask about products",
+    "viewDetails": "View details",
+    "openDetails": "View details for {{name}}",
+    "closeDetails": "Close product details",
+    "requestInformation": "Ask about this product"
+  },
+  "process": {
+    "title": "From shelf review to reliable replenishment",
+    "subtitle": "OM Distribution visits your business, identifies what the display needs, prepares and delivers the order, then organizes and replenishes the products.",
+    "ctaTitle": "Ready for a shelf review?",
+    "ctaDescription": "Tell us what your supermarket, mini market, or neighborhood store needs and we'll coordinate the next step.",
+    "ctaAction": "Request a visit",
+    "steps": {
+      "1": {
+        "title": "We review the display",
+        "description": "We assess the products, their condition, and the availability needed at your business.",
+        "alt": "OM representative checking product availability in a mini market"
+      },
+      "2": {
+        "title": "We prepare the order",
+        "description": "We organize the requested merchandise according to the needs identified onsite.",
+        "alt": "Cases of merchandise prepared inside the OM delivery van"
+      },
+      "3": {
+        "title": "We deliver the merchandise",
+        "description": "Our truck takes the confirmed order directly to your business.",
+        "alt": "OM merchandise delivered by hand truck inside a supermarket"
+      },
+      "4": {
+        "title": "We organize and replenish",
+        "description": "We arrange the display, replace old or expired products, and replenish inventory to maintain availability.",
+        "alt": "Worker organizing and replenishing a mini market display"
+      }
+    }
   },
   "branding": {
     "demoBanner": "You are viewing a demo application by Rafael Marín.",

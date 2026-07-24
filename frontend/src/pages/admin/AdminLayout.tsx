@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { PORTFOLIO_URL } from '../../config/branding';
 import {
-  LayoutDashboard, Package, Tags, MessageSquareQuote,
+  LayoutDashboard, Package, Tags,
   Mail, Users, LogOut, ChevronRight
 } from 'lucide-react';
 
@@ -19,7 +19,6 @@ const allNavItems = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, end: true, roles: ['admin', 'seller'] },
   { name: 'Products', path: '/admin/products', icon: Package, roles: ['admin', 'seller'] },
   { name: 'Categories', path: '/admin/categories', icon: Tags, roles: ['admin', 'seller'] },
-  { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquareQuote, roles: ['admin'] },
   { name: 'Contacts', path: '/admin/contacts', icon: Mail, roles: ['admin'] },
   { name: 'Users', path: '/admin/users', icon: Users, roles: ['admin'] },
 ];

@@ -27,7 +27,7 @@ const Navbar = () => {
   const navLinks = [
     { name: t('nav.home'), href: '#home' },
     { name: t('nav.products'), href: '#products' },
-    { name: t('nav.testimonials'), href: '#testimonials' },
+    { name: t('nav.process'), href: '#process' },
     { name: t('nav.contact'), href: '#contact' },
   ];
 
@@ -54,7 +54,9 @@ const Navbar = () => {
             ))}
             
             <button
+              type="button"
               onClick={() => toggleLanguage()}
+              aria-label={t('nav.switchLanguage')}
               className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all ${scrolled ? 'border-gray-300 text-gray-700 hover:bg-gray-100' : 'border-white/30 text-white hover:bg-white/10'}`}
             >
               <Globe size={18} />
@@ -65,8 +67,12 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
+              type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className={`${scrolled ? 'text-gray-700' : 'text-white'}`}
+              aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+              aria-expanded={isOpen}
+              aria-controls="mobile-navigation"
+              className={`flex h-11 w-11 items-center justify-center rounded-lg ${scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
             >
               {isOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -78,6 +84,7 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -96,10 +103,12 @@ const Navbar = () => {
               ))}
               <div className="pt-4 border-t border-gray-100">
                 <button
+                  type="button"
                   onClick={() => {
                     toggleLanguage();
                     setIsOpen(false);
                   }}
+                  aria-label={t('nav.switchLanguage')}
                   className="flex items-center gap-2 w-full px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-md"
                 >
                   <Globe size={18} />
